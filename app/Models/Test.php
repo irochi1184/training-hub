@@ -2,12 +2,23 @@
 
 namespace App\Models;
 
+use Database\Factories\QuizFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Test extends Model
 {
+    /** @use HasFactory<QuizFactory> */
+    use HasFactory;
+
+    // PHPUnitのTestCaseと名前衝突を避けるためQuizFactoryを使用する
+    protected static function newFactory(): QuizFactory
+    {
+        return QuizFactory::new();
+    }
+
     protected $fillable = [
         'cohort_id',
         'created_by',

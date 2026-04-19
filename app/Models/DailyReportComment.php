@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DailyReportComment extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'daily_report_id',
         'user_id',
