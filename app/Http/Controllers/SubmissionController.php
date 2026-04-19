@@ -32,7 +32,7 @@ class SubmissionController extends Controller
             ]);
         }
 
-        return Inertia::render('Submissions/Create', [
+        return Inertia::render('Tests/Take', [
             'test' => $test,
             'submission' => $existingSubmission,
         ]);

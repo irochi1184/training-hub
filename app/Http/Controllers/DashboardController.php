@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
-use App\Models\Cohort;
 use App\Models\DailyReport;
+use App\Models\Enrollment;
 use App\Models\RiskAlert;
+use App\Models\Submission;
+use App\Models\Test as TestModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -23,17 +25,33 @@ class DashboardController extends Controller
             UserRole::Student => $this->studentData($user),
         };
 
-        return Inertia::render('Dashboard', $data);
+        return Inertia::render('Dashboard/Index', $data);
     }
 
     private function adminData(): array
     {
+        $riskAlertCount = RiskAlert::whereNull('resolved_at')->count();
+
+        // 本日の日報提出率
+        $totalStudents = \App\Models\User::where('role', UserRole::Student)->count();
+        $todayReports = DailyReport::where('reported_on', Carbon::today())->distinct('user_id')->count('user_id');
+        $todayReportRate = $totalStudents > 0 ? round(($todayReports / $totalStudents) * 100) : 0;
+
+        // テスト受験完了率
+        $totalSubmissionsExpected = TestModel::withCount('submissions')->get()->sum(
+            fn ($t) => Enrollment::where('cohort_id', $t->cohort_id)->count()
+        );
+        $completedSubmissions = Submission::whereNotNull('submitted_at')->count();
+        $testCompletionRate = $totalSubmissionsExpected > 0
+            ? round(($completedSubmissions / $totalSubmissionsExpected) * 100)
+            : 0;
+
         return [
-            'unresolvedAlertCount' => RiskAlert::whereNull('resolved_at')->count(),
-            'recentReports' => DailyReport::with(['user', 'cohort'])
-                ->orderByDesc('reported_on')
-                ->limit(10)
-                ->get(),
+            'adminStats' => [
+                'risk_alert_count' => $riskAlertCount,
+                'today_report_rate' => $todayReportRate,
+                'test_completion_rate' => $testCompletionRate,
+            ],
         ];
     }
 
@@ -41,32 +59,56 @@ class DashboardController extends Controller
     {
         $cohortIds = $user->instructedCohorts()->pluck('id');
 
+        $riskAlertCount = RiskAlert::whereIn('cohort_id', $cohortIds)
+            ->whereNull('resolved_at')
+            ->count();
+
+        $todayReportCount = DailyReport::whereIn('cohort_id', $cohortIds)
+            ->where('reported_on', Carbon::today())
+            ->count();
+
+        // 直近テスト平均点
+        $recentTest = TestModel::whereIn('cohort_id', $cohortIds)->latest()->first();
+        $recentTestAvg = null;
+        if ($recentTest) {
+            $avg = Submission::where('test_id', $recentTest->id)
+                ->whereNotNull('score')
+                ->avg('score');
+            $recentTestAvg = $avg !== null ? round($avg, 1) : null;
+        }
+
         return [
-            'unresolvedAlertCount' => RiskAlert::whereIn('cohort_id', $cohortIds)
-                ->whereNull('resolved_at')
-                ->count(),
-            'recentReports' => DailyReport::with(['user', 'cohort'])
-                ->whereIn('cohort_id', $cohortIds)
-                ->orderByDesc('reported_on')
-                ->limit(10)
-                ->get(),
+            'instructorStats' => [
+                'risk_alert_count' => $riskAlertCount,
+                'today_report_count' => $todayReportCount,
+                'recent_test_avg' => $recentTestAvg,
+            ],
         ];
     }
 
     private function studentData(\App\Models\User $user): array
     {
+        $hasMissingReport = !$user->dailyReports()
+            ->where('reported_on', Carbon::today())
+            ->exists();
+
+        $latestReport = $user->dailyReports()
+            ->with('cohort')
+            ->orderByDesc('reported_on')
+            ->first();
+
+        $latestSubmission = $user->submissions()
+            ->with('test')
+            ->whereNotNull('submitted_at')
+            ->orderByDesc('submitted_at')
+            ->first();
+
         return [
-            'recentReports' => $user->dailyReports()
-                ->with('cohort')
-                ->orderByDesc('reported_on')
-                ->limit(7)
-                ->get(),
-            'submissions' => $user->submissions()
-                ->with('test')
-                ->whereNotNull('submitted_at')
-                ->orderByDesc('submitted_at')
-                ->limit(5)
-                ->get(),
+            'studentStats' => [
+                'has_missing_report' => $hasMissingReport,
+                'latest_report' => $latestReport,
+                'latest_submission' => $latestSubmission,
+            ],
         ];
     }
 }
