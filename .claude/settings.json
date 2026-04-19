@@ -29,6 +29,13 @@
             "command": "mkdir -p ~/.claude && jq -r '.tool_input.command // empty' >> ~/.claude/command-log.txt"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{
+            "type":"command",
+            "command":"git diff --stat"
+        }]
       }
     ],
     "PermissionRequest": [
