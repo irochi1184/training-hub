@@ -49,7 +49,7 @@ class SubmissionTest extends TestCase
         $response = $this->actingAs($student)->get("/tests/{$test->id}/take");
 
         $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page->component('Submissions/Create'));
+        $response->assertInertia(fn (Assert $page) => $page->component('Tests/Take'));
     }
 
     /** student がテストを提出すると自動採点される */
