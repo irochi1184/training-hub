@@ -1,0 +1,233 @@
+<template>
+  <AppLayout>
+    <div class="max-w-5xl">
+      <!-- ページヘッダー -->
+      <div class="mb-6">
+        <Link href="/students" class="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mb-3">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          受講生一覧に戻る
+        </Link>
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-bold text-gray-900">{{ student.name }}</h1>
+          <span
+            v-if="hasUnresolvedAlert"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700"
+          >
+            要注意
+          </span>
+        </div>
+      </div>
+
+      <!-- 基本情報カード -->
+      <div class="bg-white rounded-lg border border-gray-200 p-5 mb-6">
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">基本情報</h2>
+        <dl class="grid grid-cols-2 gap-4">
+          <div>
+            <dt class="text-xs text-gray-500">メールアドレス</dt>
+            <dd class="mt-1 text-sm text-gray-900">{{ student.email }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-gray-500">コホート</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              {{ latestEnrollment?.cohort?.name ?? '未登録' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs text-gray-500">コース</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              {{ latestEnrollment?.cohort?.course?.name ?? '—' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs text-gray-500">受講登録日</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              {{ latestEnrollment?.enrolled_at ?? '—' }}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- タブ -->
+      <div class="border-b border-gray-200 mb-6">
+        <nav class="flex gap-6">
+          <button
+            v-for="tab in tabs"
+            :key="tab.key"
+            type="button"
+            class="pb-3 text-sm font-medium border-b-2 transition-colors"
+            :class="activeTab === tab.key
+              ? 'border-blue-600 text-blue-700'
+              : 'border-transparent text-gray-500 hover:text-gray-800'"
+            @click="activeTab = tab.key"
+          >
+            {{ tab.label }}
+            <span
+              v-if="tab.count !== undefined"
+              class="ml-1.5 text-xs text-gray-400"
+            >{{ tab.count }}</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- タブコンテンツ: 日報一覧 -->
+      <div v-if="activeTab === 'reports'">
+        <DataTable
+          :empty="dailyReports.length === 0"
+          empty-message="日報がありません"
+          :col-span="4"
+        >
+          <template #head>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">日付</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">理解度</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">学習内容（要約）</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">コメント</th>
+          </template>
+          <template #body>
+            <tr
+              v-for="report in dailyReports"
+              :key="report.id"
+              class="hover:bg-gray-50 transition-colors"
+            >
+              <td class="px-4 py-3 text-sm text-gray-900">{{ report.reported_on }}</td>
+              <td class="px-4 py-3">
+                <UnderstandingBadge :level="report.understanding_level" />
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{{ report.content }}</td>
+              <td class="px-4 py-3 text-sm text-gray-500">
+                {{ report.comments?.length ?? 0 }} 件
+              </td>
+            </tr>
+          </template>
+        </DataTable>
+      </div>
+
+      <!-- タブコンテンツ: テスト結果一覧 -->
+      <div v-else-if="activeTab === 'submissions'">
+        <DataTable
+          :empty="submissions.length === 0"
+          empty-message="受験記録がありません"
+          :col-span="4"
+        >
+          <template #head>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">テスト名</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">提出日時</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">得点</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase"></th>
+          </template>
+          <template #body>
+            <tr
+              v-for="submission in submissions"
+              :key="submission.id"
+              class="hover:bg-gray-50 transition-colors"
+            >
+              <td class="px-4 py-3 text-sm text-gray-900">{{ submission.test?.title ?? '—' }}</td>
+              <td class="px-4 py-3 text-sm text-gray-600">
+                {{ submission.submitted_at ? formatDate(submission.submitted_at) : '未提出' }}
+              </td>
+              <td class="px-4 py-3 text-sm font-medium">
+                <span v-if="submission.score !== null" class="text-gray-900">{{ submission.score }} 点</span>
+                <span v-else class="text-gray-400">採点中</span>
+              </td>
+              <td class="px-4 py-3">
+                <Link
+                  :href="`/submissions/${submission.id}`"
+                  class="text-sm text-blue-600 hover:underline"
+                >
+                  詳細
+                </Link>
+              </td>
+            </tr>
+          </template>
+        </DataTable>
+      </div>
+
+      <!-- タブコンテンツ: 要注意アラート -->
+      <div v-else-if="activeTab === 'alerts'">
+        <DataTable
+          :empty="riskAlerts.length === 0"
+          empty-message="要注意アラートはありません"
+          :col-span="4"
+        >
+          <template #head>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">理由</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">詳細</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">発生日</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">状態</th>
+          </template>
+          <template #body>
+            <tr
+              v-for="alert in riskAlerts"
+              :key="alert.id"
+              class="hover:bg-gray-50 transition-colors"
+            >
+              <td class="px-4 py-3">
+                <ReasonBadge :reason="alert.reason" />
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-600">{{ alert.detail ?? '—' }}</td>
+              <td class="px-4 py-3 text-sm text-gray-600">{{ formatDate(alert.created_at) }}</td>
+              <td class="px-4 py-3">
+                <span
+                  v-if="alert.resolved_at"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700"
+                >
+                  解消済
+                </span>
+                <span
+                  v-else
+                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700"
+                >
+                  未解消
+                </span>
+              </td>
+            </tr>
+          </template>
+        </DataTable>
+      </div>
+    </div>
+  </AppLayout>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import type { User, Enrollment, DailyReport, Submission, RiskAlert } from '@/types';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import DataTable from '@/Components/DataTable.vue';
+import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
+import ReasonBadge from '@/Components/ReasonBadge.vue';
+
+const props = defineProps<{
+  student: User;
+  enrollments: Enrollment[];
+  dailyReports: DailyReport[];
+  submissions: Submission[];
+  riskAlerts: RiskAlert[];
+}>();
+
+type TabKey = 'reports' | 'submissions' | 'alerts';
+const activeTab = ref<TabKey>('reports');
+
+const tabs: { key: TabKey; label: string; count?: number }[] = [
+  { key: 'reports', label: '日報一覧', count: props.dailyReports.length },
+  { key: 'submissions', label: 'テスト結果', count: props.submissions.length },
+  { key: 'alerts', label: '要注意アラート', count: props.riskAlerts.length },
+];
+
+const latestEnrollment = computed(() => props.enrollments[0]);
+
+const hasUnresolvedAlert = computed(() =>
+  props.riskAlerts.some((a) => a.resolved_at === null),
+);
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleString('ja-JP', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+</script>
