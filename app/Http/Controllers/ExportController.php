@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ExportDailyReportsRequest;
+use App\Http\Requests\ExportTestResultsRequest;
 use App\Models\Cohort;
 use App\Models\Test;
 use App\Services\CsvExportService;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -16,6 +18,8 @@ class ExportController extends Controller
 
     public function index(): Response
     {
+        Gate::authorize('viewAny-export');
+
         $cohorts = Cohort::with('course')->orderBy('name')->get();
         $tests = Test::with('cohort')->orderByDesc('created_at')->get();
 
@@ -25,29 +29,23 @@ class ExportController extends Controller
         ]);
     }
 
-    public function dailyReports(Request $request): StreamedResponse
+    public function dailyReports(ExportDailyReportsRequest $request): StreamedResponse
     {
-        $request->validate([
-            'cohort_id' => ['required', 'integer', 'exists:cohorts,id'],
-            'date_from' => ['nullable', 'date'],
-            'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
-        ]);
+        Gate::authorize('exportDailyReports');
 
         return $this->csvExportService->exportDailyReports(
-            cohortId: (int) $request->input('cohort_id'),
-            dateFrom: $request->input('date_from'),
-            dateTo: $request->input('date_to'),
+            cohortId: (int) $request->validated('cohort_id'),
+            dateFrom: $request->validated('date_from'),
+            dateTo: $request->validated('date_to'),
         );
     }
 
-    public function testResults(Request $request): StreamedResponse
+    public function testResults(ExportTestResultsRequest $request): StreamedResponse
     {
-        $request->validate([
-            'test_id' => ['required', 'integer', 'exists:tests,id'],
-        ]);
+        Gate::authorize('exportTestResults');
 
         return $this->csvExportService->exportTestResults(
-            testId: (int) $request->input('test_id'),
+            testId: (int) $request->validated('test_id'),
         );
     }
 }

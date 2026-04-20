@@ -28,7 +28,16 @@ class DailyReportController extends Controller
 
         $reports = $query->paginate(30);
 
-        return Inertia::render('DailyReports/Index', ['reports' => $reports]);
+        $cohortsQuery = Cohort::orderBy('name');
+        if ($user->isInstructor()) {
+            $cohortsQuery->whereIn('id', $user->instructedCohorts()->pluck('id'));
+        }
+        $cohorts = $cohortsQuery->get();
+
+        return Inertia::render('DailyReports/Index', [
+            'reports' => $reports,
+            'cohorts' => $cohorts,
+        ]);
     }
 
     public function create(Request $request): Response
@@ -38,7 +47,10 @@ class DailyReportController extends Controller
         $user = $request->user();
         $cohorts = $user->enrollments()->with('cohort')->get()->pluck('cohort');
 
-        return Inertia::render('DailyReports/Create', ['cohorts' => $cohorts]);
+        return Inertia::render('DailyReports/Create', [
+            'cohorts' => $cohorts,
+            'today'   => now()->format('Y-m-d'),
+        ]);
     }
 
     public function store(StoreDailyReportRequest $request): RedirectResponse

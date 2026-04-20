@@ -10,6 +10,7 @@ use App\Models\Test;
 use App\Models\User;
 use App\Policies\DailyReportCommentPolicy;
 use App\Policies\DailyReportPolicy;
+use App\Policies\ExportPolicy;
 use App\Policies\RiskAlertPolicy;
 use App\Policies\SubmissionPolicy;
 use App\Policies\TestPolicy;
@@ -29,5 +30,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Test::class, TestPolicy::class);
         Gate::policy(Submission::class, SubmissionPolicy::class);
         Gate::policy(RiskAlert::class, RiskAlertPolicy::class);
+
+        $exportPolicy = new ExportPolicy();
+        Gate::define('viewAny-export', fn (User $user) => $exportPolicy->viewAny($user));
+        Gate::define('exportDailyReports', fn (User $user) => $exportPolicy->exportDailyReports($user));
+        Gate::define('exportTestResults', fn (User $user) => $exportPolicy->exportTestResults($user));
     }
 }

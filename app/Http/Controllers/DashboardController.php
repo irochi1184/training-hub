@@ -37,9 +37,13 @@ class DashboardController extends Controller
         $todayReports = DailyReport::where('reported_on', Carbon::today())->distinct('user_id')->count('user_id');
         $todayReportRate = $totalStudents > 0 ? round(($todayReports / $totalStudents) * 100) : 0;
 
-        // テスト受験完了率
-        $totalSubmissionsExpected = TestModel::withCount('submissions')->get()->sum(
-            fn ($t) => Enrollment::where('cohort_id', $t->cohort_id)->count()
+        // テスト受験完了率（N+1を避けるため事前集計）
+        $enrollmentCountByCohort = Enrollment::selectRaw('cohort_id, COUNT(*) as count')
+            ->groupBy('cohort_id')
+            ->pluck('count', 'cohort_id');
+
+        $totalSubmissionsExpected = TestModel::all()->sum(
+            fn ($t) => $enrollmentCountByCohort->get($t->cohort_id, 0)
         );
         $completedSubmissions = Submission::whereNotNull('submitted_at')->count();
         $testCompletionRate = $totalSubmissionsExpected > 0
