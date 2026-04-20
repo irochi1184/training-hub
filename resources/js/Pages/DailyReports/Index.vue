@@ -123,7 +123,11 @@ const filterForm = reactive({
 });
 
 function applyFilter(): void {
-  router.get('/daily-reports', filterForm, { preserveState: true, replace: true });
+  // 空文字のパラメータはURLに含めない
+  const params = Object.fromEntries(
+    Object.entries(filterForm).filter(([, v]) => v !== ''),
+  );
+  router.get('/daily-reports', params, { preserveState: true, replace: true });
 }
 
 function clearFilter(): void {

@@ -66,11 +66,41 @@ class StudentController extends Controller
         $this->authorize('view', $user);
 
         $user->load([
-            'enrollments.cohort',
-            'dailyReports' => fn ($q) => $q->orderByDesc('reported_on')->limit(30),
+            'enrollments.cohort.course',
+            'dailyReports' => fn ($q) => $q->with('comments')->orderByDesc('reported_on')->limit(30),
             'submissions' => fn ($q) => $q->with('test')->whereNotNull('submitted_at')->orderByDesc('submitted_at'),
+            'riskAlerts' => fn ($q) => $q->orderByDesc('created_at'),
         ]);
 
-        return Inertia::render('Students/Show', ['student' => $user]);
+        // 理解度推移: 直近30件を日付昇順で返す
+        $understandingTrend = $user->dailyReports
+            ->sortBy('reported_on')
+            ->values()
+            ->map(fn ($r) => [
+                'date'  => $r->reported_on,
+                'level' => $r->understanding_level,
+            ]);
+
+        // テスト結果サマリー
+        $scores = $user->submissions
+            ->whereNotNull('score')
+            ->pluck('score');
+
+        $testSummary = [
+            'count'   => $user->submissions->count(),
+            'average' => $scores->isNotEmpty() ? round($scores->avg(), 1) : null,
+            'max'     => $scores->isNotEmpty() ? $scores->max() : null,
+            'min'     => $scores->isNotEmpty() ? $scores->min() : null,
+        ];
+
+        return Inertia::render('Students/Show', [
+            'student'            => $user,
+            'enrollments'        => $user->enrollments,
+            'dailyReports'       => $user->dailyReports->sortByDesc('reported_on')->values(),
+            'submissions'        => $user->submissions,
+            'riskAlerts'         => $user->riskAlerts,
+            'understandingTrend' => $understandingTrend,
+            'testSummary'        => $testSummary,
+        ]);
     }
 }

@@ -49,6 +49,108 @@
         </dl>
       </div>
 
+      <!-- サマリーセクション: 理解度推移 + テスト結果サマリー -->
+      <div class="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-2">
+        <!-- 理解度推移グラフ -->
+        <div class="bg-white rounded-lg border border-gray-200 p-5">
+          <h2 class="text-sm font-semibold text-gray-700 mb-4">理解度推移（直近{{ understandingTrend.length }}件）</h2>
+
+          <div v-if="understandingTrend.length === 0" class="flex items-center justify-center h-32 text-sm text-gray-400">
+            日報データがありません
+          </div>
+
+          <div v-else>
+            <!-- 棒グラフ本体 -->
+            <div class="flex items-end gap-1 h-32 overflow-x-auto pb-1" style="min-height: 8rem;">
+              <div
+                v-for="item in understandingTrend"
+                :key="item.date"
+                class="flex flex-col items-center flex-shrink-0"
+                style="min-width: 1.5rem;"
+                :title="`${item.date}：理解度 ${item.level}`"
+              >
+                <div
+                  class="w-full rounded-t transition-all"
+                  :class="barColorClass(item.level)"
+                  :style="{ height: barHeightStyle(item.level) }"
+                ></div>
+              </div>
+            </div>
+
+            <!-- 凡例 -->
+            <div class="flex items-center gap-4 mt-3 text-xs text-gray-500">
+              <span class="flex items-center gap-1">
+                <span class="inline-block w-3 h-3 rounded-sm bg-red-400"></span>低い（1〜2）
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="inline-block w-3 h-3 rounded-sm bg-yellow-400"></span>普通（3）
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="inline-block w-3 h-3 rounded-sm bg-green-400"></span>高い（4〜5）
+              </span>
+            </div>
+
+            <!-- 直近値 -->
+            <div class="mt-3 flex items-center gap-2">
+              <span class="text-xs text-gray-500">直近の理解度:</span>
+              <UnderstandingBadge :level="latestUnderstandingLevel" />
+            </div>
+          </div>
+        </div>
+
+        <!-- テスト結果サマリー -->
+        <div class="bg-white rounded-lg border border-gray-200 p-5">
+          <h2 class="text-sm font-semibold text-gray-700 mb-4">テスト結果サマリー</h2>
+
+          <div v-if="testSummary.count === 0" class="flex items-center justify-center h-32 text-sm text-gray-400">
+            受験記録がありません
+          </div>
+
+          <div v-else class="grid grid-cols-2 gap-3">
+            <!-- 受験数 -->
+            <div class="rounded-lg bg-gray-50 border border-gray-100 p-3 text-center">
+              <div class="text-2xl font-bold text-gray-900">{{ testSummary.count }}</div>
+              <div class="text-xs text-gray-500 mt-1">受験数</div>
+            </div>
+
+            <!-- 平均点 -->
+            <div class="rounded-lg bg-blue-50 border border-blue-100 p-3 text-center">
+              <div class="text-2xl font-bold text-blue-700">
+                {{ testSummary.average !== null ? testSummary.average : '—' }}
+              </div>
+              <div class="text-xs text-blue-500 mt-1">平均点</div>
+            </div>
+
+            <!-- 最高点 -->
+            <div class="rounded-lg bg-green-50 border border-green-100 p-3 text-center">
+              <div class="text-2xl font-bold text-green-700">
+                {{ testSummary.max !== null ? testSummary.max : '—' }}
+              </div>
+              <div class="text-xs text-green-500 mt-1">最高点</div>
+            </div>
+
+            <!-- 最低点 -->
+            <div
+              class="rounded-lg border p-3 text-center"
+              :class="isLowScore ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'"
+            >
+              <div
+                class="text-2xl font-bold"
+                :class="isLowScore ? 'text-red-600' : 'text-gray-700'"
+              >
+                {{ testSummary.min !== null ? testSummary.min : '—' }}
+              </div>
+              <div
+                class="text-xs mt-1"
+                :class="isLowScore ? 'text-red-400' : 'text-gray-500'"
+              >
+                最低点
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- タブ -->
       <div class="border-b border-gray-200 mb-6">
         <nav class="flex gap-6">
@@ -192,7 +294,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import type { User, Enrollment, DailyReport, Submission, RiskAlert } from '@/types';
+import type {
+  User,
+  Enrollment,
+  DailyReport,
+  Submission,
+  RiskAlert,
+  UnderstandingTrendItem,
+  TestSummary,
+} from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
 import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
@@ -204,6 +314,8 @@ const props = defineProps<{
   dailyReports: DailyReport[];
   submissions: Submission[];
   riskAlerts: RiskAlert[];
+  understandingTrend: UnderstandingTrendItem[];
+  testSummary: TestSummary;
 }>();
 
 type TabKey = 'reports' | 'submissions' | 'alerts';
@@ -219,6 +331,33 @@ const latestEnrollment = computed(() => props.enrollments[0]);
 
 const hasUnresolvedAlert = computed(() =>
   props.riskAlerts.some((a) => a.resolved_at === null),
+);
+
+// 理解度推移グラフ
+const CHART_MAX_HEIGHT_PX = 128; // h-32 = 8rem = 128px
+
+function barHeightStyle(level: number): string {
+  // レベル1でも最低10%の高さを確保して視認性を上げる
+  const minRatio = 0.1;
+  const ratio = minRatio + ((level - 1) / 4) * (1 - minRatio);
+  return `${Math.round(ratio * CHART_MAX_HEIGHT_PX)}px`;
+}
+
+function barColorClass(level: number): string {
+  if (level <= 2) return 'bg-red-400';
+  if (level === 3) return 'bg-yellow-400';
+  return 'bg-green-400';
+}
+
+const latestUnderstandingLevel = computed(() => {
+  if (props.understandingTrend.length === 0) return 0;
+  return props.understandingTrend[props.understandingTrend.length - 1].level;
+});
+
+// 最低点が60点未満なら警告表示
+const LOW_SCORE_THRESHOLD = 60;
+const isLowScore = computed(
+  () => props.testSummary.min !== null && props.testSummary.min < LOW_SCORE_THRESHOLD,
 );
 
 function formatDate(dateStr: string): string {

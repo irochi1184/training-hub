@@ -26,7 +26,19 @@ class DailyReportController extends Controller
             $query->whereIn('cohort_id', $cohortIds);
         }
 
-        $reports = $query->paginate(30);
+        if ($request->filled('cohort_id')) {
+            $query->where('cohort_id', $request->integer('cohort_id'));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('reported_on', '>=', $request->string('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('reported_on', '<=', $request->string('date_to'));
+        }
+
+        $reports = $query->paginate(30)->withQueryString();
 
         $cohortsQuery = Cohort::orderBy('name');
         if ($user->isInstructor()) {
