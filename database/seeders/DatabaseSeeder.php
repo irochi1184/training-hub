@@ -74,20 +74,26 @@ class DatabaseSeeder extends Seeder
             'description' => 'PythonとPandasを使ったデータ分析コース',
         ]);
 
+        // 実施中の期として現在日を含む期間に設定
+        $cohort1Start = Carbon::today()->subMonths(3);
+        $cohort1End = Carbon::today()->addMonths(3);
+        $cohort2Start = Carbon::today()->subMonth();
+        $cohort2End = Carbon::today()->addMonths(5);
+
         $cohort1 = Cohort::create([
             'course_id' => $course1->id,
             'instructor_id' => $instructor1->id,
-            'name' => '2024年4月期',
-            'starts_on' => '2024-04-01',
-            'ends_on' => '2024-09-30',
+            'name' => $cohort1Start->format('Y年n月') . '期',
+            'starts_on' => $cohort1Start->toDateString(),
+            'ends_on' => $cohort1End->toDateString(),
         ]);
 
         $cohort2 = Cohort::create([
             'course_id' => $course2->id,
             'instructor_id' => $instructor2->id,
-            'name' => '2024年10月期',
-            'starts_on' => '2024-10-01',
-            'ends_on' => '2025-03-31',
+            'name' => $cohort2Start->format('Y年n月') . '期',
+            'starts_on' => $cohort2Start->toDateString(),
+            'ends_on' => $cohort2End->toDateString(),
         ]);
 
         // 受講生をコホートに登録（1〜3をcohort1、4〜5をcohort2）
@@ -95,7 +101,7 @@ class DatabaseSeeder extends Seeder
             Enrollment::create([
                 'cohort_id' => $cohort1->id,
                 'user_id' => $student->id,
-                'enrolled_at' => '2024-04-01',
+                'enrolled_at' => $cohort1Start->toDateString(),
             ]);
         }
 
@@ -103,7 +109,7 @@ class DatabaseSeeder extends Seeder
             Enrollment::create([
                 'cohort_id' => $cohort2->id,
                 'user_id' => $student->id,
-                'enrolled_at' => '2024-10-01',
+                'enrolled_at' => $cohort2Start->toDateString(),
             ]);
         }
 
