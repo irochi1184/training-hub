@@ -37,6 +37,7 @@ class DailyReportController extends Controller
         return Inertia::render('DailyReports/Index', [
             'reports' => $reports,
             'cohorts' => $cohorts,
+            'filters' => $request->only(['cohort_id', 'date_from', 'date_to']),
         ]);
     }
 

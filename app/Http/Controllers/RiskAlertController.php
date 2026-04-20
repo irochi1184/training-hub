@@ -18,7 +18,6 @@ class RiskAlertController extends Controller
         $user = $request->user();
 
         $query = RiskAlert::with(['user', 'cohort'])
-            ->whereNull('resolved_at')
             ->orderByDesc('created_at');
 
         if ($user->isInstructor()) {
@@ -26,7 +25,7 @@ class RiskAlertController extends Controller
             $query->whereIn('cohort_id', $cohortIds);
         }
 
-        $alerts = $query->paginate(30);
+        $alerts = $query->get();
 
         return Inertia::render('RiskAlerts/Index', ['alerts' => $alerts]);
     }

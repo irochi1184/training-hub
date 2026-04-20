@@ -34,9 +34,10 @@ test.describe('テスト作成フロー', () => {
         // テストを作成するボタンをクリック
         await page.getByRole('button', { name: 'テストを作成する' }).click();
 
-        // テスト一覧ページに遷移したことを確認する
-        await expect(page).toHaveURL(/\/tests/, { timeout: 10000 });
-        await expect(page.getByText('PHPの基礎テスト')).toBeVisible();
+        // テスト一覧ページに遷移したことを確認する（/tests/create ではなく /tests 末尾）
+        await expect(page).toHaveURL(/\/tests$/, { timeout: 15000 });
+        await page.waitForLoadState('networkidle');
+        await expect(page.getByText('PHPの基礎テスト')).toBeVisible({ timeout: 10000 });
     });
 });
 

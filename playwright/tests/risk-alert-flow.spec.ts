@@ -13,7 +13,7 @@ test.describe('要注意者アラートフロー', () => {
         // ページが正常に表示されることを確認する
         await expect(page).toHaveURL(/\/risk-alerts/);
         // ページにコンテンツが描画されるのを待つ
-        await expect(page.getByText('要注意者一覧')).toBeVisible({ timeout: 10000 });
+        await expect(page.getByRole('heading', { name: '要注意者一覧' })).toBeVisible({ timeout: 10000 });
     });
 
     test('instructor がアラートを解消できる', async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe('要注意者アラートフロー', () => {
         await page.waitForLoadState('networkidle');
 
         // 解消ボタンが存在する場合のみ操作する
-        const resolveButton = page.getByRole('button', { name: '解消' }).first();
+        const resolveButton = page.getByRole('button', { name: '解消にする' }).first();
 
         try {
             await resolveButton.waitFor({ timeout: 5000 });

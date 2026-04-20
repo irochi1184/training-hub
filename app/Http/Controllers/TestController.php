@@ -40,7 +40,7 @@ class TestController extends Controller
             $query->whereIn('cohort_id', $cohortIds);
         }
 
-        $tests = $query->paginate(20);
+        $tests = $query->get();
 
         return Inertia::render('Tests/Index', ['tests' => $tests]);
     }
