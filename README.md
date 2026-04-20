@@ -106,11 +106,19 @@ PLAYWRIGHT_BASE_URL=http://localhost:8000 npx playwright test
 - [docs/permissions.md](docs/permissions.md) — 権限設計
 - [CLAUDE.md](CLAUDE.md) — 開発原則(Claude Code 用指示)
 
-## 既知の未実装
+## 要注意者検知の定期実行
 
-- 要注意者検知の定期実行コマンド(`risk:detect`)と `routes/console.php` のスケジュール登録は未実装。
-  現状は `App\Actions\DetectRiskAction::execute(Cohort $cohort)` を `tinker` などから直接呼ぶ運用。
-- 記述式問題、Slack通知、AI要約、PDF帳票、請求、複雑な契約・権限分離は MVP の対象外。
+実施中のコホートに対する要注意者検知は `risk:detect` コマンドで実行する。
+
+```bash
+php artisan risk:detect
+```
+
+`routes/console.php` で毎日 AM 6:00 に自動実行するようスケジュール登録済み。本番環境では `php artisan schedule:work` もしくは cron で `schedule:run` を 1 分ごとに起動する。
+
+## 対象外機能(MVP 初版)
+
+- 記述式問題、Slack通知、AI要約、PDF帳票、請求、複雑な契約・権限分離
 
 ## Git 運用
 
