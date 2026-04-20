@@ -3,7 +3,7 @@
     <div class="max-w-6xl">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-900">要注意者一覧</h1>
-        <p class="text-sm text-gray-500">{{ filteredAlerts.length }} 件</p>
+        <p class="text-sm text-gray-500">{{ alerts.total }} 件</p>
       </div>
 
       <!-- フィルター -->
@@ -14,20 +14,20 @@
             <button
               type="button"
               class="px-3 py-1.5 text-sm font-medium rounded transition-colors"
-              :class="showResolved === false
+              :class="!showResolved
                 ? 'bg-red-600 text-white'
                 : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'"
-              @click="showResolved = false"
+              @click="applyFilter(false)"
             >
               未解消のみ
             </button>
             <button
               type="button"
               class="px-3 py-1.5 text-sm font-medium rounded transition-colors"
-              :class="showResolved === true
+              :class="showResolved
                 ? 'bg-gray-700 text-white'
                 : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'"
-              @click="showResolved = true"
+              @click="applyFilter(true)"
             >
               全件
             </button>
@@ -50,7 +50,7 @@
 
       <!-- テーブル -->
       <DataTable
-        :empty="filteredAlerts.length === 0"
+        :empty="alerts.data.length === 0"
         :empty-message="showResolved ? 'アラートがありません' : '未解消のアラートはありません'"
         :col-span="6"
       >
@@ -65,7 +65,7 @@
 
         <template #body>
           <tr
-            v-for="alert in filteredAlerts"
+            v-for="alert in alerts.data"
             :key="alert.id"
             class="hover:bg-gray-50 transition-colors"
             :class="alert.resolved_at ? 'opacity-60' : ''"
@@ -109,33 +109,37 @@
           </tr>
         </template>
       </DataTable>
+
+      <Pagination :data="alerts" />
     </div>
   </AppLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import type { RiskAlert } from '@/types';
+import type { RiskAlert, PaginatedData } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
+import Pagination from '@/Components/Pagination.vue';
 import ReasonBadge from '@/Components/ReasonBadge.vue';
 
 const props = defineProps<{
-  alerts: RiskAlert[];
+  alerts: PaginatedData<RiskAlert>;
+  unresolvedCount: number;
+  filters: {
+    show_resolved?: string;
+  };
 }>();
 
-// フィルター状態
-const showResolved = ref(false);
+const showResolved = computed(() => props.filters.show_resolved === '1');
 
-const filteredAlerts = computed(() => {
-  if (showResolved.value) return props.alerts;
-  return props.alerts.filter((a) => a.resolved_at === null);
-});
-
-const unresolvedCount = computed(() =>
-  props.alerts.filter((a) => a.resolved_at === null).length,
-);
+function applyFilter(resolved: boolean): void {
+  router.get('/risk-alerts', resolved ? { show_resolved: '1' } : {}, {
+    preserveState: true,
+    replace: true,
+  });
+}
 
 function resolve(alertId: number): void {
   router.patch(`/risk-alerts/${alertId}/resolve`, {}, { preserveScroll: true });

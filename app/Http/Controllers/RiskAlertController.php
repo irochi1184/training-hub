@@ -25,9 +25,19 @@ class RiskAlertController extends Controller
             $query->whereIn('cohort_id', $cohortIds);
         }
 
-        $alerts = $query->get();
+        $unresolvedCount = (clone $query)->whereNull('resolved_at')->count();
 
-        return Inertia::render('RiskAlerts/Index', ['alerts' => $alerts]);
+        if (!$request->input('show_resolved')) {
+            $query->whereNull('resolved_at');
+        }
+
+        $alerts = $query->paginate(30)->withQueryString();
+
+        return Inertia::render('RiskAlerts/Index', [
+            'alerts' => $alerts,
+            'unresolvedCount' => $unresolvedCount,
+            'filters' => $request->only(['show_resolved']),
+        ]);
     }
 
     public function resolve(Request $request, RiskAlert $alert): RedirectResponse

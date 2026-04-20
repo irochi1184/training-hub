@@ -19,7 +19,7 @@
 
       <!-- テーブル -->
       <DataTable
-        :empty="tests.length === 0"
+        :empty="tests.data.length === 0"
         empty-message="テストがありません"
         :col-span="canCreate ? 7 : 6"
       >
@@ -35,7 +35,7 @@
 
         <template #body>
           <tr
-            v-for="test in tests"
+            v-for="test in tests.data"
             :key="test.id"
             class="hover:bg-gray-50 transition-colors"
           >
@@ -89,6 +89,8 @@
           </tr>
         </template>
       </DataTable>
+
+      <Pagination :data="tests" />
     </div>
 
     <!-- 削除確認ダイアログ -->
@@ -106,14 +108,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
-import type { Test, PageProps } from '@/types';
+import type { Test, PageProps, PaginatedData } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
+import Pagination from '@/Components/Pagination.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
 import ConfirmDialog from '@/Components/ConfirmDialog.vue';
 
 const props = defineProps<{
-  tests: Test[];
+  tests: PaginatedData<Test>;
 }>();
 
 const page = usePage<PageProps>();
