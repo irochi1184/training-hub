@@ -12,7 +12,7 @@ export default defineConfig({
 
     // ベースURL（ローカル開発サーバー）
     use: {
-        baseURL: 'http://localhost:8000',
+        baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost',
         // スクリーンショットは失敗時のみ保存
         screenshot: 'only-on-failure',
         // 追跡は失敗時のみ保存

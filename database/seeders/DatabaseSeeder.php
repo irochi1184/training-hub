@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
         $instructor1 = User::create([
             'organization_id' => $org->id,
             'name' => '講師 花子',
-            'email' => 'instructor1@example.com',
+            'email' => 'instructor@example.com',
             'password' => Hash::make('password'),
             'role' => UserRole::Instructor->value,
         ]);
@@ -52,10 +52,11 @@ class DatabaseSeeder extends Seeder
 
         $students = collect();
         for ($i = 1; $i <= 5; $i++) {
+            $email = $i === 1 ? 'student@example.com' : "student{$i}@example.com";
             $students->push(User::create([
                 'organization_id' => $org->id,
                 'name' => "受講生 {$i}号",
-                'email' => "student{$i}@example.com",
+                'email' => $email,
                 'password' => Hash::make('password'),
                 'role' => UserRole::Student->value,
             ]));

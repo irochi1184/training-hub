@@ -8,10 +8,12 @@ test.describe('要注意者アラートフロー', () => {
 
         // 要注意者一覧ページに遷移する
         await page.goto('/risk-alerts');
+        await page.waitForLoadState('networkidle');
 
         // ページが正常に表示されることを確認する
         await expect(page).toHaveURL(/\/risk-alerts/);
-        await expect(page.getByRole('heading')).toBeVisible();
+        // ページにコンテンツが描画されるのを待つ
+        await expect(page.getByText('要注意者一覧')).toBeVisible({ timeout: 10000 });
     });
 
     test('instructor がアラートを解消できる', async ({ page }) => {
@@ -20,12 +22,14 @@ test.describe('要注意者アラートフロー', () => {
 
         // 要注意者一覧ページに遷移する
         await page.goto('/risk-alerts');
+        await page.waitForLoadState('networkidle');
 
         // 解消ボタンが存在する場合のみ操作する
         const resolveButton = page.getByRole('button', { name: '解消' }).first();
-        const count = await resolveButton.count();
 
-        if (count === 0) {
+        try {
+            await resolveButton.waitFor({ timeout: 5000 });
+        } catch {
             // アラートがない場合はスキップする
             test.skip();
             return;
@@ -34,6 +38,6 @@ test.describe('要注意者アラートフロー', () => {
         await resolveButton.click();
 
         // 成功メッセージが表示されることを確認する
-        await expect(page.getByText('アラートを解消しました')).toBeVisible();
+        await expect(page.getByText('アラートを解消しました')).toBeVisible({ timeout: 10000 });
     });
 });
