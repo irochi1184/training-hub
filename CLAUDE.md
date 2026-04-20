@@ -138,3 +138,32 @@
 - 入力欄は迷わせない
 - 危険状態や未提出は目立たせる
 - 操作導線は短くする
+
+# Git運用ルール
+
+- main に直接コミットしない
+- 必ず feature ブランチを切る
+
+命名規則:
+
+feature/student-management
+feature/daily-reports
+feature/test-engine
+fix/scoring-bug
+refactor/risk-detection
+
+- 作業前に git status を確認する
+- 作業後に git diff を確認する
+- 変更ごとに意味のある commit を作る
+- 1 commit に unrelated な変更を混ぜない
+
+commit message 形式:
+
+feat: add daily report submission
+fix: correct auto scoring logic
+refactor: extract risk detection service
+test: add playwright flow for test submission
+
+- merge は勝手にしない
+- rebase は勝手にしない
+- force push はしない

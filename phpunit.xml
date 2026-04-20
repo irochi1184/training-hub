@@ -31,5 +31,7 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="VITE_USING_VITE" value="false"/>
+        <env name="INERTIA_TESTING_ENSURE_PAGES_EXIST" value="false"/>
     </php>
 </phpunit>
