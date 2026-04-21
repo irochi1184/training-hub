@@ -81,7 +81,7 @@
             class="hover:bg-gray-50 transition-colors cursor-pointer"
             @click="goToReport(report.id)"
           >
-            <td class="px-4 py-3 text-sm text-gray-900 font-medium">{{ report.reported_on }}</td>
+            <td class="px-4 py-3 text-sm text-gray-900 font-medium">{{ formatDate(report.reported_on) }}</td>
             <td class="px-4 py-3 text-sm text-gray-800">{{ report.user?.name ?? '—' }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ report.cohort?.name ?? '—' }}</td>
             <td class="px-4 py-3">
@@ -105,6 +105,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
 import Pagination from '@/Components/Pagination.vue';
 import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
+import { formatDate } from '@/utils/formatDate';
 
 const props = defineProps<{
   reports: PaginatedData<DailyReport>;

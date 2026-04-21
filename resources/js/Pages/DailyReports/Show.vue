@@ -18,7 +18,7 @@
         <div class="flex items-start justify-between mb-5 pb-5 border-b border-gray-100">
           <div>
             <h1 class="text-lg font-bold text-gray-900 mb-1">
-              {{ report.reported_on }} の日報
+              {{ formatDate(report.reported_on) }} の日報
             </h1>
             <p class="text-sm text-gray-500">
               提出者: <span class="font-medium text-gray-700">{{ report.user?.name ?? '—' }}</span>
@@ -80,6 +80,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
 import CommentList from '@/Components/CommentList.vue';
 import CommentForm from '@/Components/CommentForm.vue';
+import { formatDate } from '@/utils/formatDate';
 
 const props = defineProps<{
   report: DailyReport;
