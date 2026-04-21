@@ -66,19 +66,28 @@
                   受験する
                 </Link>
 
-                <!-- admin/instructor: 編集・削除 -->
+                <!-- admin/instructor: 編集・削除（受験者がいると編集も削除も不可） -->
                 <template v-if="canCreate">
                   <Link
+                    v-if="(test.submissions_count ?? 0) === 0"
                     :href="`/tests/${test.id}/edit`"
                     class="text-sm text-blue-600 hover:underline"
                   >
                     編集
                   </Link>
+                  <span
+                    v-else
+                    class="text-sm text-gray-400 cursor-not-allowed"
+                    title="受験者がいるため編集できません"
+                  >
+                    編集
+                  </span>
                   <button
                     type="button"
                     class="text-sm text-red-600 hover:underline"
                     :disabled="(test.submissions_count ?? 0) > 0"
                     :class="(test.submissions_count ?? 0) > 0 ? 'opacity-40 cursor-not-allowed' : ''"
+                    :title="(test.submissions_count ?? 0) > 0 ? '受験者がいるため削除できません' : ''"
                     @click="requestDelete(test)"
                   >
                     削除
