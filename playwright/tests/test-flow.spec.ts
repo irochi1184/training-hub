@@ -77,16 +77,14 @@ test.describe('テスト受験フロー', () => {
             }
         }
 
-        // 提出ボタンをクリックする
-        const submitButton = page.getByRole('button', { name: /提出/ });
+        // 提出ボタンをクリックする（一覧画面の「提出する」）
+        const submitButton = page.getByRole('button', { name: '提出する' }).first();
         if (await submitButton.count() > 0) {
             await submitButton.click();
 
-            // 確認ダイアログがあれば確認する
-            const confirmButton = page.getByRole('button', { name: /確認|はい|OK/ });
-            if (await confirmButton.count() > 0) {
-                await confirmButton.click();
-            }
+            // 確認ダイアログ内の「提出する」ボタンを押す（2 つ目に出現する方）
+            const confirmSubmit = page.getByRole('button', { name: '提出する' }).last();
+            await confirmSubmit.click();
 
             // 結果画面に遷移することを確認する
             await expect(page).toHaveURL(/\/submissions\//, { timeout: 10000 });

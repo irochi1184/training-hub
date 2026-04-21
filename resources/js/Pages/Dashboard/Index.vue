@@ -100,7 +100,7 @@
               <div class="space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="text-sm text-slate-600">日付</span>
-                  <span class="text-sm font-medium">{{ studentStats.latest_report.reported_on }}</span>
+                  <span class="text-sm font-medium">{{ formatDate(studentStats.latest_report.reported_on) }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <span class="text-sm text-slate-600">理解度</span>
@@ -157,6 +157,7 @@ import type { PageProps, DailyReport, Submission } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
 import { defineComponent, h } from 'vue';
+import { formatDate } from '@/utils/formatDate';
 
 // StatCard をインライン定義
 const StatCard = defineComponent({

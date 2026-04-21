@@ -7,8 +7,8 @@
       </div>
 
       <!-- フィルター -->
-      <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-5 mb-5">
-        <div class="flex items-center gap-4">
+      <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-5 mb-5 space-y-3">
+        <div class="flex items-center gap-4 flex-wrap">
           <label class="text-sm font-medium text-slate-700">表示対象:</label>
           <div class="flex gap-2">
             <button
@@ -17,7 +17,7 @@
               :class="!showResolved
                 ? 'bg-red-600 text-white'
                 : 'bg-white border border-slate-300 text-slate-600 hover:bg-slate-50'"
-              @click="applyFilter(false)"
+              @click="applyFilter({ show_resolved: false })"
             >
               未解消のみ
             </button>
@@ -27,11 +27,42 @@
               :class="showResolved
                 ? 'bg-slate-700 text-white'
                 : 'bg-white border border-slate-300 text-slate-600 hover:bg-slate-50'"
-              @click="applyFilter(true)"
+              @click="applyFilter({ show_resolved: true })"
             >
               全件
             </button>
           </div>
+        </div>
+        <div class="flex items-center gap-4 flex-wrap">
+          <label class="text-sm font-medium text-slate-700 shrink-0">絞り込み:</label>
+          <select
+            :value="filters.reason ?? ''"
+            class="text-sm border border-slate-300 rounded px-3 py-1.5 focus:ring-indigo-500 focus:border-indigo-500"
+            @change="applyFilter({ reason: ($event.target as HTMLSelectElement).value || undefined })"
+          >
+            <option value="">すべての理由</option>
+            <option value="report_missing">日報未提出</option>
+            <option value="low_understanding">理解度低下</option>
+            <option value="low_score">得点率低下</option>
+          </select>
+          <select
+            :value="filters.cohort_id ?? ''"
+            class="text-sm border border-slate-300 rounded px-3 py-1.5 focus:ring-indigo-500 focus:border-indigo-500"
+            @change="applyFilter({ cohort_id: ($event.target as HTMLSelectElement).value || undefined })"
+          >
+            <option value="">すべてのコホート</option>
+            <option v-for="cohort in cohorts" :key="cohort.id" :value="cohort.id">
+              {{ cohort.name }}
+            </option>
+          </select>
+          <button
+            v-if="hasActiveFilter"
+            type="button"
+            class="text-sm text-slate-500 hover:text-slate-700 underline"
+            @click="clearFilters"
+          >
+            絞り込み解除
+          </button>
         </div>
       </div>
 
@@ -124,21 +155,52 @@ import DataTable from '@/Components/DataTable.vue';
 import Pagination from '@/Components/Pagination.vue';
 import ReasonBadge from '@/Components/ReasonBadge.vue';
 
+type CohortOption = { id: number; name: string };
+
 const props = defineProps<{
   alerts: PaginatedData<RiskAlert>;
   unresolvedCount: number;
+  cohorts: CohortOption[];
   filters: {
     show_resolved?: string;
+    reason?: string;
+    cohort_id?: string;
   };
 }>();
 
 const showResolved = computed(() => props.filters.show_resolved === '1');
 
-function applyFilter(resolved: boolean): void {
-  router.get('/risk-alerts', resolved ? { show_resolved: '1' } : {}, {
-    preserveState: true,
-    replace: true,
-  });
+const hasActiveFilter = computed(
+  () => Boolean(props.filters.reason) || Boolean(props.filters.cohort_id),
+);
+
+type FilterPatch = {
+  show_resolved?: boolean;
+  reason?: string | undefined;
+  cohort_id?: string | undefined;
+};
+
+function applyFilter(patch: FilterPatch): void {
+  const query: Record<string, string> = {};
+
+  const nextShowResolved = patch.show_resolved ?? showResolved.value;
+  if (nextShowResolved) query.show_resolved = '1';
+
+  const nextReason = 'reason' in patch ? patch.reason : props.filters.reason;
+  if (nextReason) query.reason = nextReason;
+
+  const nextCohortId = 'cohort_id' in patch ? patch.cohort_id : props.filters.cohort_id;
+  if (nextCohortId) query.cohort_id = String(nextCohortId);
+
+  router.get('/risk-alerts', query, { preserveState: true, replace: true });
+}
+
+function clearFilters(): void {
+  router.get(
+    '/risk-alerts',
+    showResolved.value ? { show_resolved: '1' } : {},
+    { preserveState: true, replace: true },
+  );
 }
 
 function resolve(alertId: number): void {

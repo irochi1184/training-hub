@@ -43,7 +43,7 @@
           <div>
             <dt class="text-xs text-slate-500">受講登録日</dt>
             <dd class="mt-1 text-sm text-slate-900">
-              {{ latestEnrollment?.enrolled_at ?? '—' }}
+              {{ formatDate(latestEnrollment?.enrolled_at) }}
             </dd>
           </div>
         </dl>
@@ -192,7 +192,7 @@
               :key="report.id"
               class="hover:bg-slate-50 transition-colors"
             >
-              <td class="px-4 py-3 text-sm text-slate-900">{{ report.reported_on }}</td>
+              <td class="px-4 py-3 text-sm text-slate-900">{{ formatDate(report.reported_on) }}</td>
               <td class="px-4 py-3">
                 <UnderstandingBadge :level="report.understanding_level" />
               </td>
@@ -226,7 +226,7 @@
             >
               <td class="px-4 py-3 text-sm text-slate-900">{{ submission.test?.title ?? '—' }}</td>
               <td class="px-4 py-3 text-sm text-slate-600">
-                {{ submission.submitted_at ? formatDate(submission.submitted_at) : '未提出' }}
+                {{ submission.submitted_at ? formatDateTime(submission.submitted_at) : '未提出' }}
               </td>
               <td class="px-4 py-3 text-sm font-medium">
                 <span v-if="submission.score !== null" class="text-slate-900">{{ submission.score }} 点</span>
@@ -268,7 +268,7 @@
                 <ReasonBadge :reason="alert.reason" />
               </td>
               <td class="px-4 py-3 text-sm text-slate-600">{{ alert.detail ?? '—' }}</td>
-              <td class="px-4 py-3 text-sm text-slate-600">{{ formatDate(alert.created_at) }}</td>
+              <td class="px-4 py-3 text-sm text-slate-600">{{ formatDateTime(alert.created_at) }}</td>
               <td class="px-4 py-3">
                 <span
                   v-if="alert.resolved_at"
@@ -307,6 +307,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
 import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
 import ReasonBadge from '@/Components/ReasonBadge.vue';
+import { formatDate, formatDateTime } from '@/utils/formatDate';
 
 const props = defineProps<{
   student: User;
@@ -359,14 +360,4 @@ const LOW_SCORE_THRESHOLD = 60;
 const isLowScore = computed(
   () => props.testSummary.min !== null && props.testSummary.min < LOW_SCORE_THRESHOLD,
 );
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 </script>
