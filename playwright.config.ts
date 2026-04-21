@@ -13,9 +13,9 @@ export default defineConfig({
     // テストがタイムアウトするまでの時間
     timeout: 30_000,
 
-    // ベースURL（ローカル開発サーバー）
+    // ベースURL（Sail コンテナをそのまま使う）
     use: {
-        baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:8000',
+        baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost',
         // スクリーンショットは失敗時のみ保存
         screenshot: 'only-on-failure',
         // 追跡は失敗時のみ保存
@@ -28,14 +28,6 @@ export default defineConfig({
             use: { ...devices['Desktop Chrome'] },
         },
     ],
-
-    // 専用の開発サーバーを自動で立ち上げてテスト間の干渉を避ける
-    webServer: {
-        command: 'php artisan serve --host=127.0.0.1 --port=8000',
-        url: 'http://127.0.0.1:8000/up',
-        reuseExistingServer: !process.env.CI,
-        timeout: 60_000,
-    },
 
     // テスト結果の出力先
     outputDir: './playwright/test-results',
