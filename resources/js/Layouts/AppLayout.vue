@@ -1,17 +1,17 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex">
+  <div class="min-h-screen bg-slate-50 flex">
     <!-- サイドバー -->
-    <aside class="w-56 bg-white border-r border-gray-200 flex flex-col shrink-0">
+    <aside class="w-60 bg-slate-900 flex flex-col shrink-0">
       <!-- ロゴ -->
-      <div class="h-14 flex items-center px-5 border-b border-gray-200">
-        <Link href="/dashboard" class="text-lg font-bold text-gray-800">
+      <div class="h-16 flex items-center px-6 border-b border-white/10">
+        <Link href="/dashboard" class="text-lg font-bold text-white tracking-tight">
           Training Hub
         </Link>
       </div>
 
       <!-- ナビゲーション -->
-      <nav class="flex-1 py-4 overflow-y-auto">
-        <ul class="space-y-1 px-3">
+      <nav class="flex-1 py-5 overflow-y-auto">
+        <ul class="space-y-1 px-4">
           <!-- 共通 -->
           <li>
             <NavLink href="/dashboard" :current="isCurrentPath('/dashboard')">
@@ -22,7 +22,7 @@
           <!-- admin / instructor 向け -->
           <template v-if="user.role === 'admin' || user.role === 'instructor'">
             <li class="pt-3 pb-1">
-              <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">管理</span>
+              <span class="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-widest">管理</span>
             </li>
             <li>
               <NavLink href="/students" :current="isCurrentPath('/students')">
@@ -57,7 +57,7 @@
           <!-- admin 向け -->
           <template v-if="user.role === 'admin'">
             <li class="pt-3 pb-1">
-              <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">出力</span>
+              <span class="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-widest">出力</span>
             </li>
             <li>
               <NavLink href="/exports" :current="isCurrentPath('/exports')">
@@ -69,7 +69,7 @@
           <!-- student 向け -->
           <template v-if="user.role === 'student'">
             <li class="pt-3 pb-1">
-              <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">受講</span>
+              <span class="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-widest">受講</span>
             </li>
             <li>
               <NavLink href="/daily-reports/create" :current="isCurrentPath('/daily-reports/create')">
@@ -89,13 +89,13 @@
     <!-- メインエリア -->
     <div class="flex-1 flex flex-col min-w-0">
       <!-- ヘッダー -->
-      <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-end px-6 shrink-0">
+      <header class="h-16 bg-white border-b border-slate-200/60 flex items-center justify-end px-6 shrink-0">
         <div class="flex items-center gap-4">
-          <span class="text-sm text-gray-600">{{ user.name }}</span>
-          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{{ roleLabel }}</span>
+          <span class="text-sm text-slate-700 font-medium">{{ user.name }}</span>
+          <span class="text-xs text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full font-medium">{{ roleLabel }}</span>
           <button
             type="button"
-            class="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+            class="text-sm text-slate-400 hover:text-slate-700 transition-colors"
             @click="logout"
           >
             ログアウト
@@ -135,10 +135,10 @@ const NavLink = defineComponent({
         {
           href: props.href,
           class: [
-            'block px-3 py-2 rounded text-sm transition-colors',
+            'block px-3 py-2 rounded-lg text-sm transition-colors',
             props.current
-              ? 'bg-blue-50 text-blue-700 font-medium'
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+              ? 'bg-white/10 text-white font-medium'
+              : 'text-slate-400 hover:bg-white/5 hover:text-white',
           ],
         },
         slots.default,

@@ -1,7 +1,7 @@
 <template>
   <AppLayout>
     <div class="max-w-5xl">
-      <h1 class="text-2xl font-bold text-gray-900 mb-6">ダッシュボード</h1>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight mb-6">ダッシュボード</h1>
 
       <!-- admin向け表示 -->
       <template v-if="user.role === 'admin'">
@@ -26,7 +26,7 @@
         </div>
 
         <!-- 要注意者アラート -->
-        <div v-if="adminStats.risk_alert_count > 0" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div v-if="adminStats.risk_alert_count > 0" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
           <div class="flex items-center gap-2 mb-1">
             <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -62,7 +62,7 @@
         </div>
 
         <!-- 要注意者アラート -->
-        <div v-if="instructorStats.risk_alert_count > 0" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div v-if="instructorStats.risk_alert_count > 0" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
           <div class="flex items-center gap-2 mb-1">
             <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -78,7 +78,7 @@
       <!-- student向け表示 -->
       <template v-else-if="user.role === 'student'">
         <!-- 未提出警告 -->
-        <div v-if="studentStats.has_missing_report" class="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+        <div v-if="studentStats.has_missing_report" class="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded-xl">
           <div class="flex items-center gap-2">
             <svg class="w-4 h-4 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -94,55 +94,55 @@
 
         <div class="grid grid-cols-2 gap-5">
           <!-- 直近日報 -->
-          <div class="bg-white rounded-lg border border-gray-200 p-5">
-            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">直近の日報</h2>
+          <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
+            <h2 class="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-4">直近の日報</h2>
             <template v-if="studentStats.latest_report">
               <div class="space-y-2">
                 <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">日付</span>
+                  <span class="text-sm text-slate-600">日付</span>
                   <span class="text-sm font-medium">{{ formatDate(studentStats.latest_report.reported_on) }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">理解度</span>
+                  <span class="text-sm text-slate-600">理解度</span>
                   <UnderstandingBadge :level="studentStats.latest_report.understanding_level" />
                 </div>
               </div>
               <Link
                 :href="`/daily-reports/${studentStats.latest_report.id}`"
-                class="mt-4 block text-sm text-blue-600 hover:underline"
+                class="mt-4 block text-sm text-indigo-600 hover:text-indigo-800"
               >
                 詳細を見る
               </Link>
             </template>
-            <p v-else class="text-sm text-gray-400">まだ日報がありません</p>
+            <p v-else class="text-sm text-slate-400">まだ日報がありません</p>
           </div>
 
           <!-- 直近テスト結果 -->
-          <div class="bg-white rounded-lg border border-gray-200 p-5">
-            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">直近のテスト結果</h2>
+          <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
+            <h2 class="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-4">直近のテスト結果</h2>
             <template v-if="studentStats.latest_submission">
               <div class="space-y-2">
                 <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">テスト</span>
+                  <span class="text-sm text-slate-600">テスト</span>
                   <span class="text-sm font-medium truncate max-w-[10rem]">
                     {{ studentStats.latest_submission.test?.title }}
                   </span>
                 </div>
                 <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">得点</span>
-                  <span class="text-sm font-bold text-blue-700">
+                  <span class="text-sm text-slate-600">得点</span>
+                  <span class="text-sm font-bold text-indigo-700">
                     {{ studentStats.latest_submission.score ?? '採点中' }}
                   </span>
                 </div>
               </div>
               <Link
                 :href="`/submissions/${studentStats.latest_submission.id}`"
-                class="mt-4 block text-sm text-blue-600 hover:underline"
+                class="mt-4 block text-sm text-indigo-600 hover:text-indigo-800"
               >
                 詳細を見る
               </Link>
             </template>
-            <p v-else class="text-sm text-gray-400">まだ受験記録がありません</p>
+            <p v-else class="text-sm text-slate-400">まだ受験記録がありません</p>
           </div>
         </div>
       </template>
@@ -170,16 +170,16 @@ const StatCard = defineComponent({
   },
   setup(props) {
     return () => {
-      const inner = h('div', { class: 'bg-white rounded-lg border border-gray-200 p-5' }, [
-        h('p', { class: 'text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2' }, props.label),
+      const inner = h('div', { class: 'bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6' }, [
+        h('p', { class: 'text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-3' }, props.label),
         h('p', {
           class: [
             'text-3xl font-bold',
-            props.alert ? 'text-red-600' : 'text-gray-900',
+            props.alert ? 'text-red-600' : 'text-slate-900',
           ],
         }, [
           String(props.value),
-          props.unit ? h('span', { class: 'text-base font-normal text-gray-500 ml-1' }, props.unit) : null,
+          props.unit ? h('span', { class: 'text-base font-normal text-slate-500 ml-1' }, props.unit) : null,
         ]),
       ]);
       return inner;

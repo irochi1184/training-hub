@@ -1,6 +1,6 @@
 <template>
   <span
-    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
     :class="badgeClass"
   >
     {{ reasonLabel }}
@@ -31,5 +31,5 @@ const config: Record<RiskAlert['reason'], { label: string; classes: string }> = 
 };
 
 const reasonLabel = computed(() => config[props.reason]?.label ?? props.reason);
-const badgeClass = computed(() => config[props.reason]?.classes ?? 'bg-gray-100 text-gray-600');
+const badgeClass = computed(() => config[props.reason]?.classes ?? 'bg-slate-100 text-slate-600');
 </script>

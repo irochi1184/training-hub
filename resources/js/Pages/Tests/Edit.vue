@@ -2,52 +2,52 @@
   <AppLayout>
     <div class="max-w-4xl">
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">テスト編集</h1>
-        <Link href="/tests" class="text-sm text-gray-500 hover:text-gray-800">
+        <h1 class="text-2xl font-bold text-slate-900">テスト編集</h1>
+        <Link href="/tests" class="text-sm text-slate-500 hover:text-slate-800">
           ← 一覧に戻る
         </Link>
       </div>
 
       <form @submit.prevent="submit" class="space-y-6">
         <!-- 基本情報 -->
-        <div class="bg-white rounded-lg border border-gray-200 p-6 space-y-5">
-          <h2 class="text-sm font-semibold text-gray-700 border-b border-gray-100 pb-3">基本情報</h2>
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6 space-y-5">
+          <h2 class="text-sm font-semibold text-slate-700 border-b border-slate-100 pb-3">基本情報</h2>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label class="block text-sm font-medium text-slate-700 mb-1">
               タイトル <span class="text-red-500">*</span>
             </label>
             <input
               v-model="form.title"
               type="text"
               required
-              class="block w-full rounded border px-3 py-2 text-sm text-gray-900 focus:ring-1 focus:outline-none transition-colors"
+              class="block w-full rounded border px-3 py-2 text-sm text-slate-900 focus:ring-1 focus:outline-none transition-colors"
               :class="form.errors.title
                 ? 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'"
+                : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500'"
             />
             <p v-if="form.errors.title" class="mt-1 text-xs text-red-600">{{ form.errors.title }}</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              説明 <span class="text-xs text-gray-400 font-normal">（任意）</span>
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+              説明 <span class="text-xs text-slate-400 font-normal">（任意）</span>
             </label>
             <textarea
               v-model="form.description"
               rows="2"
-              class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors resize-none"
+              class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors resize-none"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label class="block text-sm font-medium text-slate-700 mb-1">
               コホート <span class="text-red-500">*</span>
             </label>
             <select
               v-model="form.cohort_id"
               required
-              class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
             >
               <option v-for="cohort in cohorts" :key="cohort.id" :value="cohort.id">
                 {{ cohort.name }}
@@ -57,30 +57,30 @@
 
           <div class="grid grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                制限時間（分）<span class="text-xs text-gray-400 font-normal">（空欄=無制限）</span>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                制限時間（分）<span class="text-xs text-slate-400 font-normal">（空欄=無制限）</span>
               </label>
               <input
                 v-model.number="form.time_limit_minutes"
                 type="number"
                 min="1"
-                class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">公開開始日時</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">公開開始日時</label>
               <input
                 v-model="form.opens_at"
                 type="datetime-local"
-                class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">公開終了日時</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">公開終了日時</label>
               <input
                 v-model="form.closes_at"
                 type="datetime-local"
-                class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
           </div>
@@ -89,10 +89,10 @@
         <!-- 問題エディタ -->
         <div class="space-y-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-gray-700">問題</h2>
+            <h2 class="text-sm font-semibold text-slate-700">問題</h2>
             <button
               type="button"
-              class="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition-colors"
+              class="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-indigo-600 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 transition-colors"
               @click="addQuestion"
             >
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -104,7 +104,7 @@
 
           <div
             v-if="form.questions.length === 0"
-            class="bg-white rounded-lg border-2 border-dashed border-gray-300 p-8 text-center text-gray-400"
+            class="bg-white rounded-lg border-2 border-dashed border-slate-300 p-8 text-center text-slate-400"
           >
             <p class="text-sm">問題がありません。「問題を追加」ボタンで追加してください。</p>
           </div>
@@ -112,10 +112,10 @@
           <div
             v-for="(question, qIndex) in form.questions"
             :key="qIndex"
-            class="bg-white rounded-lg border border-gray-200 p-5"
+            class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6"
           >
             <div class="flex items-center justify-between mb-4">
-              <span class="text-sm font-semibold text-gray-700">第 {{ qIndex + 1 }} 問</span>
+              <span class="text-sm font-semibold text-slate-700">第 {{ qIndex + 1 }} 問</span>
               <button
                 type="button"
                 class="text-xs text-red-500 hover:text-red-700 transition-colors"
@@ -126,35 +126,35 @@
             </div>
 
             <div class="mb-4">
-              <label class="block text-xs font-medium text-gray-500 mb-1">
+              <label class="block text-xs font-medium text-slate-500 mb-1">
                 問題文 <span class="text-red-500">*</span>
               </label>
               <textarea
                 v-model="question.body"
                 rows="2"
                 required
-                class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none resize-none"
+                class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none"
               />
             </div>
 
             <div class="mb-4 flex items-center gap-3">
-              <label class="text-xs font-medium text-gray-500">配点</label>
+              <label class="text-xs font-medium text-slate-500">配点</label>
               <input
                 v-model.number="question.score"
                 type="number"
                 min="1"
                 required
-                class="w-20 rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                class="w-20 rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               />
-              <span class="text-xs text-gray-400">点</span>
+              <span class="text-xs text-slate-400">点</span>
             </div>
 
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="text-xs font-medium text-gray-500">選択肢</label>
+                <label class="text-xs font-medium text-slate-500">選択肢</label>
                 <button
                   type="button"
-                  class="text-xs text-blue-600 hover:underline"
+                  class="text-xs text-indigo-600 hover:underline"
                   @click="addChoice(qIndex)"
                 >
                   + 選択肢を追加
@@ -170,19 +170,19 @@
                   <input
                     type="checkbox"
                     v-model="choice.is_correct"
-                    class="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
+                    class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
                   />
                   <input
                     v-model="choice.body"
                     type="text"
                     required
-                    class="flex-1 rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                    :class="choice.is_correct ? 'bg-green-50 border-green-300' : ''"
+                    class="flex-1 rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                    :class="choice.is_correct ? 'bg-emerald-50 border-emerald-300' : ''"
                   />
-                  <span v-if="choice.is_correct" class="text-xs text-green-600 font-medium shrink-0">正解</span>
+                  <span v-if="choice.is_correct" class="text-xs text-emerald-600 font-medium shrink-0">正解</span>
                   <button
                     type="button"
-                    class="text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                    class="text-slate-400 hover:text-red-500 transition-colors shrink-0"
                     @click="removeChoice(qIndex, cIndex)"
                     :disabled="question.choices.length <= 2"
                     :class="question.choices.length <= 2 ? 'opacity-30 cursor-not-allowed' : ''"
@@ -193,7 +193,7 @@
                   </button>
                 </div>
               </div>
-              <p class="mt-1 text-xs text-gray-400">チェックボックスで正解を選択してください</p>
+              <p class="mt-1 text-xs text-slate-400">チェックボックスで正解を選択してください</p>
             </div>
           </div>
         </div>
@@ -202,13 +202,13 @@
         <div class="flex justify-end gap-3">
           <Link
             href="/tests"
-            class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+            class="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors"
           >
             キャンセル
           </Link>
           <button
             type="submit"
-            class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            class="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 transition-colors"
             :disabled="form.processing"
           >
             {{ form.processing ? '保存中...' : '変更を保存する' }}

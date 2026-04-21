@@ -1,31 +1,27 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
-    <!-- ヘッダー（最小化。テスト名と残り時間のみ） -->
-    <header class="bg-white border-b border-gray-200 shrink-0">
+  <div class="min-h-screen bg-slate-50 flex flex-col">
+    <!-- ヘッダー -->
+    <header class="bg-white border-b border-slate-200/60 shadow-sm shrink-0">
       <div class="max-w-4xl mx-auto h-14 flex items-center justify-between px-6">
-        <!-- テスト名 -->
         <div class="flex items-center gap-3">
-          <span class="text-xs text-gray-400 font-semibold uppercase tracking-wider">受験中</span>
-          <h1 class="text-base font-semibold text-gray-800">{{ testTitle }}</h1>
+          <span class="text-xs text-indigo-500 font-semibold uppercase tracking-wider">受験中</span>
+          <h1 class="text-base font-semibold text-slate-800">{{ testTitle }}</h1>
         </div>
-
-        <!-- 残り時間 -->
         <div v-if="timeLimitMinutes" class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">残り時間</span>
+          <span class="text-sm text-slate-500">残り時間</span>
           <span
             class="text-lg font-mono font-bold tabular-nums"
-            :class="timeWarning ? 'text-red-600' : 'text-gray-800'"
+            :class="timeWarning ? 'text-red-600' : 'text-slate-800'"
           >
             {{ formattedTime }}
           </span>
         </div>
-        <div v-else class="text-sm text-gray-400">
+        <div v-else class="text-sm text-slate-400">
           時間制限なし
         </div>
       </div>
     </header>
 
-    <!-- メインコンテンツ -->
     <main class="flex-1 overflow-auto">
       <div class="max-w-4xl mx-auto py-8 px-6">
         <slot />
@@ -40,14 +36,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 const props = defineProps<{
   testTitle: string;
   timeLimitMinutes?: number | null;
-  startedAt?: string; // ISO 8601形式
+  startedAt?: string;
 }>();
 
 const emit = defineEmits<{
   timeUp: [];
 }>();
 
-// 残り秒数
 const remainingSeconds = ref(0);
 let timer: ReturnType<typeof setInterval> | null = null;
 
@@ -86,6 +81,5 @@ const formattedTime = computed(() => {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 });
 
-// 残り5分を切ったら警告色
 const timeWarning = computed(() => remainingSeconds.value <= 300 && remainingSeconds.value > 0);
 </script>

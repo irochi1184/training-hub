@@ -26,7 +26,19 @@ class DailyReportController extends Controller
             $query->whereIn('cohort_id', $cohortIds);
         }
 
-        $reports = $query->paginate(30);
+        if ($request->filled('cohort_id')) {
+            $query->where('cohort_id', $request->integer('cohort_id'));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('reported_on', '>=', $request->string('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('reported_on', '<=', $request->string('date_to'));
+        }
+
+        $reports = $query->paginate(30)->withQueryString();
 
         $cohortsQuery = Cohort::orderBy('name');
         if ($user->isInstructor()) {
@@ -58,8 +70,23 @@ class DailyReportController extends Controller
     {
         $this->authorize('create', DailyReport::class);
 
+        $validated = $request->validated();
+
+        // 同日・同コホートの重複提出チェック
+        $existing = DailyReport::where('user_id', $request->user()->id)
+            ->where('cohort_id', $validated['cohort_id'])
+            ->whereDate('reported_on', $validated['reported_on'])
+            ->first();
+
+        if ($existing) {
+            // 既存の日報を更新
+            $existing->update($validated);
+            return redirect()->route('daily-reports.show', $existing)
+                ->with('success', '日報を更新しました');
+        }
+
         $report = DailyReport::create([
-            ...$request->validated(),
+            ...$validated,
             'user_id' => $request->user()->id,
         ]);
 

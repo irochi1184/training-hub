@@ -14,27 +14,39 @@ use Inertia\Response;
 
 class SubmissionController extends Controller
 {
-    public function create(Request $request, Test $test): Response
+    public function create(Request $request, Test $test): Response|RedirectResponse
     {
-        $this->authorize('create', [Submission::class, $test]);
-
         $test->load(['questions.choices']);
 
+        // 既に提出済みの場合は結果ページへリダイレクト
         $existingSubmission = $test->submissions()
             ->where('user_id', $request->user()->id)
             ->first();
 
-        if (!$existingSubmission) {
-            $existingSubmission = Submission::create([
-                'test_id' => $test->id,
-                'user_id' => $request->user()->id,
-                'started_at' => Carbon::now(),
+        if ($existingSubmission && $existingSubmission->isSubmitted()) {
+            return redirect()->route('submissions.show', $existingSubmission);
+        }
+
+        // 受験中（未提出）の場合はそのまま継続
+        if ($existingSubmission) {
+            return Inertia::render('Tests/Take', [
+                'test' => $test,
+                'submission' => $existingSubmission,
             ]);
         }
 
+        // 新規受験: ポリシーチェック
+        $this->authorize('create', [Submission::class, $test]);
+
+        $submission = Submission::create([
+            'test_id' => $test->id,
+            'user_id' => $request->user()->id,
+            'started_at' => Carbon::now(),
+        ]);
+
         return Inertia::render('Tests/Take', [
             'test' => $test,
-            'submission' => $existingSubmission,
+            'submission' => $submission,
         ]);
     }
 

@@ -1,25 +1,22 @@
 <template>
   <div v-if="links.length > 3" class="flex items-center justify-between mt-4">
-    <!-- 件数情報 -->
-    <p class="text-sm text-gray-500">
+    <p class="text-sm text-slate-500">
       全 {{ total }} 件中 {{ from }}〜{{ to }} 件を表示
     </p>
-
-    <!-- ページリンク -->
     <nav class="flex items-center gap-1">
       <template v-for="link in links" :key="link.label">
         <span
           v-if="link.url === null"
-          class="px-3 py-1.5 text-sm rounded text-gray-300 cursor-default"
+          class="px-3 py-1.5 text-sm rounded-lg text-slate-300 cursor-default"
           v-html="link.label"
         />
         <Link
           v-else
           :href="link.url"
-          class="px-3 py-1.5 text-sm rounded transition-colors"
+          class="px-3 py-1.5 text-sm rounded-lg transition-colors"
           :class="link.active
-            ? 'bg-blue-600 text-white font-medium'
-            : 'text-gray-600 hover:bg-gray-100'"
+            ? 'bg-indigo-600 text-white font-medium shadow-sm'
+            : 'text-slate-600 hover:bg-slate-100'"
           v-html="link.label"
           preserve-scroll
         />

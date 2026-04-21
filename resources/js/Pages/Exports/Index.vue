@@ -1,23 +1,23 @@
 <template>
   <AppLayout>
     <div class="max-w-2xl">
-      <h1 class="text-2xl font-bold text-gray-900 mb-6">CSV出力</h1>
+      <h1 class="text-2xl font-bold text-slate-900 mb-6">CSV出力</h1>
 
       <div class="space-y-6">
         <!-- 日報CSV -->
-        <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
           <div class="mb-4">
-            <h2 class="text-base font-semibold text-gray-800">日報データ</h2>
-            <p class="text-sm text-gray-500 mt-1">受講生の日報内容・理解度をCSV形式で出力します</p>
+            <h2 class="text-base font-semibold text-slate-800">日報データ</h2>
+            <p class="text-sm text-slate-500 mt-1">受講生の日報内容・理解度をCSV形式で出力します</p>
           </div>
 
           <div class="space-y-4">
             <!-- コホート選択 -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">コホート</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">コホート</label>
               <select
                 v-model="reportForm.cohort_id"
-                class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               >
                 <option value="">すべて</option>
                 <option v-for="cohort in cohorts" :key="cohort.id" :value="cohort.id">
@@ -29,19 +29,19 @@
             <!-- 日付範囲 -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">開始日</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">開始日</label>
                 <input
                   v-model="reportForm.date_from"
                   type="date"
-                  class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">終了日</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">終了日</label>
                 <input
                   v-model="reportForm.date_to"
                   type="date"
-                  class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -50,7 +50,7 @@
             <div>
               <a
                 :href="reportDownloadUrl"
-                class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors"
+                class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded hover:bg-emerald-700 transition-colors"
                 download
               >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -63,21 +63,21 @@
         </div>
 
         <!-- テスト結果CSV -->
-        <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
           <div class="mb-4">
-            <h2 class="text-base font-semibold text-gray-800">テスト結果データ</h2>
-            <p class="text-sm text-gray-500 mt-1">受講生のテスト得点・正誤情報をCSV形式で出力します</p>
+            <h2 class="text-base font-semibold text-slate-800">テスト結果データ</h2>
+            <p class="text-sm text-slate-500 mt-1">受講生のテスト得点・正誤情報をCSV形式で出力します</p>
           </div>
 
           <div class="space-y-4">
             <!-- テスト選択 -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
+              <label class="block text-sm font-medium text-slate-700 mb-1">
                 テスト <span class="text-red-500">*</span>
               </label>
               <select
                 v-model="testResultForm.test_id"
-                class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               >
                 <option value="" disabled>テストを選択してください</option>
                 <option v-for="test in tests" :key="test.id" :value="test.id">
@@ -92,8 +92,8 @@
                 :href="testResultDownloadUrl"
                 class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white rounded transition-colors"
                 :class="testResultForm.test_id
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-gray-300 cursor-not-allowed pointer-events-none'"
+                  ? 'bg-emerald-600 hover:bg-emerald-700'
+                  : 'bg-slate-300 cursor-not-allowed pointer-events-none'"
                 :download="!!testResultForm.test_id"
               >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -101,7 +101,7 @@
                 </svg>
                 テスト結果CSV をダウンロード
               </a>
-              <p v-if="!testResultForm.test_id" class="mt-1 text-xs text-gray-400">
+              <p v-if="!testResultForm.test_id" class="mt-1 text-xs text-slate-400">
                 テストを選択するとダウンロードできます
               </p>
             </div>

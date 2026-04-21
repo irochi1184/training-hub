@@ -117,4 +117,51 @@ class SubmissionTest extends TestCase
         // 既存の提出ページにリダイレクトされる
         $response->assertRedirect(route('submissions.show', $submission));
     }
+
+    /** 受験済みのテスト受験画面(GET)にアクセスすると結果ページへリダイレクトされる */
+    public function test_受験済みのテスト受験画面にアクセスすると結果ページへリダイレクトされる(): void
+    {
+        $student = User::factory()->student()->create();
+        $cohort = Cohort::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+
+        [$test] = $this->createTestWithQuestions($cohort);
+
+        // 受験済みの提出を作成する
+        $submission = Submission::factory()->submitted()->create([
+            'test_id' => $test->id,
+            'user_id' => $student->id,
+        ]);
+
+        // 受験画面にアクセスすると結果ページへリダイレクトされる
+        $response = $this->actingAs($student)->get("/tests/{$test->id}/take");
+
+        $response->assertRedirect(route('submissions.show', $submission));
+    }
+
+    /** 受験中のテスト受験画面に再アクセスすると継続できる */
+    public function test_受験中のテストに再アクセスすると継続できる(): void
+    {
+        $student = User::factory()->student()->create();
+        $cohort = Cohort::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+
+        [$test] = $this->createTestWithQuestions($cohort);
+
+        // 受験中（未提出）の提出を作成する
+        $submission = Submission::factory()->create([
+            'test_id' => $test->id,
+            'user_id' => $student->id,
+            'submitted_at' => null,
+        ]);
+
+        // 受験画面に再アクセスすると受験画面が表示される（リダイレクトなし）
+        $response = $this->actingAs($student)->get("/tests/{$test->id}/take");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page->component('Tests/Take'));
+
+        // 提出レコードが増えていないこと
+        $this->assertDatabaseCount('submissions', 1);
+    }
 }

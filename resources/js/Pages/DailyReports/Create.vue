@@ -1,25 +1,25 @@
 <template>
   <AppLayout>
     <div class="max-w-2xl">
-      <h1 class="text-2xl font-bold text-gray-900 mb-6">日報入力</h1>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight mb-6">日報入力</h1>
 
       <form @submit.prevent="submit" class="space-y-6">
         <!-- コホート選択 -->
-        <div class="bg-white rounded-lg border border-gray-200 p-5 space-y-5">
-          <h2 class="text-sm font-semibold text-gray-700">基本情報</h2>
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6 space-y-5">
+          <h2 class="text-sm font-semibold text-slate-700">基本情報</h2>
 
           <div>
-            <label for="cohort_id" class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="cohort_id" class="block text-sm font-medium text-slate-700 mb-1">
               コホート <span class="text-red-500">*</span>
             </label>
             <select
               id="cohort_id"
               v-model="form.cohort_id"
               required
-              class="block w-full rounded border px-3 py-2 text-sm text-gray-900 focus:ring-1 focus:outline-none transition-colors"
+              class="block w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:ring-1 focus:outline-none transition-colors"
               :class="form.errors.cohort_id
                 ? 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'"
+                : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500'"
             >
               <option value="" disabled>選択してください</option>
               <option v-for="cohort in cohorts" :key="cohort.id" :value="cohort.id">
@@ -30,7 +30,7 @@
           </div>
 
           <div>
-            <label for="reported_on" class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="reported_on" class="block text-sm font-medium text-slate-700 mb-1">
               日付 <span class="text-red-500">*</span>
             </label>
             <input
@@ -38,18 +38,18 @@
               v-model="form.reported_on"
               type="date"
               required
-              class="block w-full rounded border px-3 py-2 text-sm text-gray-900 focus:ring-1 focus:outline-none transition-colors"
+              class="block w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:ring-1 focus:outline-none transition-colors"
               :class="form.errors.reported_on
                 ? 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'"
+                : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500'"
             />
             <p v-if="form.errors.reported_on" class="mt-1 text-xs text-red-600">{{ form.errors.reported_on }}</p>
           </div>
         </div>
 
         <!-- 理解度 -->
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
-          <h2 class="text-sm font-semibold text-gray-700 mb-4">
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
+          <h2 class="text-sm font-semibold text-slate-700 mb-4">
             理解度 <span class="text-red-500">*</span>
           </h2>
 
@@ -57,10 +57,10 @@
             <label
               v-for="option in understandingOptions"
               :key="option.value"
-              class="flex items-start gap-3 p-3 rounded border cursor-pointer transition-colors"
+              class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors"
               :class="form.understanding_level === option.value
                 ? `${option.selectedClass} border-current`
-                : 'border-gray-200 hover:border-gray-300'"
+                : 'border-slate-200 hover:border-slate-300'"
             >
               <input
                 type="radio"
@@ -69,10 +69,10 @@
                 class="mt-0.5 shrink-0"
               />
               <div>
-                <span class="text-sm font-medium" :class="form.understanding_level === option.value ? '' : 'text-gray-800'">
+                <span class="text-sm font-medium" :class="form.understanding_level === option.value ? '' : 'text-slate-800'">
                   {{ option.value }}. {{ option.label }}
                 </span>
-                <p class="text-xs text-gray-500 mt-0.5">{{ option.description }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">{{ option.description }}</p>
               </div>
             </label>
           </div>
@@ -82,40 +82,40 @@
         </div>
 
         <!-- 学習内容 -->
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
           <div>
-            <label for="content" class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="content" class="block text-sm font-medium text-slate-700 mb-1">
               学習内容 <span class="text-red-500">*</span>
             </label>
-            <p class="text-xs text-gray-500 mb-2">本日学習した内容を具体的に記述してください</p>
+            <p class="text-xs text-slate-500 mb-2">本日学習した内容を具体的に記述してください</p>
             <textarea
               id="content"
               v-model="form.content"
               rows="6"
               required
               placeholder="例: HTTPメソッド（GET / POST / PUT / DELETE）の違いを学んだ。RESTful APIの設計原則について..."
-              class="block w-full rounded border px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:ring-1 focus:outline-none transition-colors resize-y"
+              class="block w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:ring-1 focus:outline-none transition-colors resize-y"
               :class="form.errors.content
                 ? 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'"
+                : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500'"
             />
             <p v-if="form.errors.content" class="mt-1 text-xs text-red-600">{{ form.errors.content }}</p>
           </div>
         </div>
 
         <!-- 感想・気づき（任意） -->
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
           <div>
-            <label for="impression" class="block text-sm font-medium text-gray-700 mb-1">
-              感想・気づき <span class="text-xs text-gray-400 font-normal">（任意）</span>
+            <label for="impression" class="block text-sm font-medium text-slate-700 mb-1">
+              感想・気づき <span class="text-xs text-slate-400 font-normal">（任意）</span>
             </label>
-            <p class="text-xs text-gray-500 mb-2">疑問点や今後取り組みたいことなどを自由に記述してください</p>
+            <p class="text-xs text-slate-500 mb-2">疑問点や今後取り組みたいことなどを自由に記述してください</p>
             <textarea
               id="impression"
               v-model="form.impression"
               rows="4"
               placeholder="例: REST APIの設計でURLの命名が難しいと感じた。次回は実際にAPIを叩いて..."
-              class="block w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors resize-y"
+              class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors resize-y"
             />
             <p v-if="form.errors.impression" class="mt-1 text-xs text-red-600">{{ form.errors.impression }}</p>
           </div>
@@ -125,13 +125,13 @@
         <div class="flex justify-end gap-3">
           <Link
             href="/dashboard"
-            class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+            class="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
           >
             キャンセル
           </Link>
           <button
             type="submit"
-            class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            class="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors"
             :disabled="form.processing"
           >
             {{ form.processing ? '提出中...' : '日報を提出する' }}

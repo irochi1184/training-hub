@@ -128,6 +128,18 @@ export interface RiskAlert {
   cohort?: Cohort;
 }
 
+export interface UnderstandingTrendItem {
+  date: string;
+  level: number; // 1〜5
+}
+
+export interface TestSummary {
+  count: number;
+  average: number | null;
+  max: number | null;
+  min: number | null;
+}
+
 export interface PaginatedData<T> {
   data: T[];
   current_page: number;

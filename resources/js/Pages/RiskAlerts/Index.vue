@@ -2,21 +2,21 @@
   <AppLayout>
     <div class="max-w-6xl">
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">要注意者一覧</h1>
-        <p class="text-sm text-gray-500">{{ alerts.total }} 件</p>
+        <h1 class="text-2xl font-bold text-slate-900">要注意者一覧</h1>
+        <p class="text-sm text-slate-500">{{ alerts.total }} 件</p>
       </div>
 
       <!-- フィルター -->
-      <div class="bg-white rounded-lg border border-gray-200 p-4 mb-5 space-y-3">
+      <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-5 mb-5 space-y-3">
         <div class="flex items-center gap-4 flex-wrap">
-          <label class="text-sm font-medium text-gray-700">表示対象:</label>
+          <label class="text-sm font-medium text-slate-700">表示対象:</label>
           <div class="flex gap-2">
             <button
               type="button"
               class="px-3 py-1.5 text-sm font-medium rounded transition-colors"
               :class="!showResolved
                 ? 'bg-red-600 text-white'
-                : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'"
+                : 'bg-white border border-slate-300 text-slate-600 hover:bg-slate-50'"
               @click="applyFilter({ show_resolved: false })"
             >
               未解消のみ
@@ -25,8 +25,8 @@
               type="button"
               class="px-3 py-1.5 text-sm font-medium rounded transition-colors"
               :class="showResolved
-                ? 'bg-gray-700 text-white'
-                : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'"
+                ? 'bg-slate-700 text-white'
+                : 'bg-white border border-slate-300 text-slate-600 hover:bg-slate-50'"
               @click="applyFilter({ show_resolved: true })"
             >
               全件
@@ -34,10 +34,10 @@
           </div>
         </div>
         <div class="flex items-center gap-4 flex-wrap">
-          <label class="text-sm font-medium text-gray-700 shrink-0">絞り込み:</label>
+          <label class="text-sm font-medium text-slate-700 shrink-0">絞り込み:</label>
           <select
             :value="filters.reason ?? ''"
-            class="text-sm border border-gray-300 rounded px-3 py-1.5 focus:ring-blue-500 focus:border-blue-500"
+            class="text-sm border border-slate-300 rounded px-3 py-1.5 focus:ring-indigo-500 focus:border-indigo-500"
             @change="applyFilter({ reason: ($event.target as HTMLSelectElement).value || undefined })"
           >
             <option value="">すべての理由</option>
@@ -47,7 +47,7 @@
           </select>
           <select
             :value="filters.cohort_id ?? ''"
-            class="text-sm border border-gray-300 rounded px-3 py-1.5 focus:ring-blue-500 focus:border-blue-500"
+            class="text-sm border border-slate-300 rounded px-3 py-1.5 focus:ring-indigo-500 focus:border-indigo-500"
             @change="applyFilter({ cohort_id: ($event.target as HTMLSelectElement).value || undefined })"
           >
             <option value="">すべてのコホート</option>
@@ -58,7 +58,7 @@
           <button
             v-if="hasActiveFilter"
             type="button"
-            class="text-sm text-gray-500 hover:text-gray-700 underline"
+            class="text-sm text-slate-500 hover:text-slate-700 underline"
             @click="clearFilters"
           >
             絞り込み解除
@@ -86,40 +86,40 @@
         :col-span="6"
       >
         <template #head>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">受講生</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">コホート</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">理由</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">詳細</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">発生日</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">状態</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">受講生</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">コホート</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">理由</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">詳細</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">発生日</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">状態</th>
         </template>
 
         <template #body>
           <tr
             v-for="alert in alerts.data"
             :key="alert.id"
-            class="hover:bg-gray-50 transition-colors"
+            class="hover:bg-slate-50 transition-colors"
             :class="alert.resolved_at ? 'opacity-60' : ''"
           >
             <td class="px-4 py-3">
               <Link
                 :href="`/students/${alert.user_id}`"
-                class="text-sm font-medium text-blue-600 hover:underline"
+                class="text-sm font-medium text-indigo-600 hover:underline"
               >
                 {{ alert.user?.name ?? '—' }}
               </Link>
             </td>
-            <td class="px-4 py-3 text-sm text-gray-600">{{ alert.cohort?.name ?? '—' }}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">{{ alert.cohort?.name ?? '—' }}</td>
             <td class="px-4 py-3">
               <ReasonBadge :reason="alert.reason" />
             </td>
-            <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{{ alert.detail ?? '—' }}</td>
-            <td class="px-4 py-3 text-sm text-gray-500">{{ formatDate(alert.created_at) }}</td>
+            <td class="px-4 py-3 text-sm text-slate-600 max-w-xs truncate">{{ alert.detail ?? '—' }}</td>
+            <td class="px-4 py-3 text-sm text-slate-500">{{ formatDate(alert.created_at) }}</td>
             <td class="px-4 py-3">
               <div class="flex items-center gap-2">
                 <span
                   v-if="alert.resolved_at"
-                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700"
                 >
                   解消済
                 </span>
@@ -129,7 +129,7 @@
                   </span>
                   <button
                     type="button"
-                    class="text-xs text-gray-500 border border-gray-300 rounded px-2 py-0.5 hover:bg-gray-100 transition-colors"
+                    class="text-xs text-slate-500 border border-slate-300 rounded px-2 py-0.5 hover:bg-slate-100 transition-colors"
                     @click="resolve(alert.id)"
                   >
                     解消にする
