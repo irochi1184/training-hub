@@ -156,36 +156,8 @@ import { Link, usePage } from '@inertiajs/vue3';
 import type { PageProps, DailyReport, Submission } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
-import { defineComponent, h } from 'vue';
+import StatCard from '@/Components/StatCard.vue';
 import { formatDate } from '@/utils/formatDate';
-
-// StatCard をインライン定義
-const StatCard = defineComponent({
-  props: {
-    label: { type: String, required: true },
-    value: { type: [Number, String], required: true },
-    unit: { type: String, default: '' },
-    alert: { type: Boolean, default: false },
-    link: { type: String, default: '' },
-  },
-  setup(props) {
-    return () => {
-      const inner = h('div', { class: 'bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6' }, [
-        h('p', { class: 'text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-3' }, props.label),
-        h('p', {
-          class: [
-            'text-3xl font-bold',
-            props.alert ? 'text-red-600' : 'text-slate-900',
-          ],
-        }, [
-          String(props.value),
-          props.unit ? h('span', { class: 'text-base font-normal text-slate-500 ml-1' }, props.unit) : null,
-        ]),
-      ]);
-      return inner;
-    };
-  },
-});
 
 interface AdminStats {
   risk_alert_count: number;
