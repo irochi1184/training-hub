@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\RiskAlertReason;
+use App\Models\Cohort;
 use App\Models\RiskAlert;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,12 +33,29 @@ class RiskAlertController extends Controller
             $query->whereNull('resolved_at');
         }
 
+        if ($request->filled('reason')) {
+            $reason = RiskAlertReason::tryFrom($request->input('reason'));
+            if ($reason) {
+                $query->where('reason', $reason->value);
+            }
+        }
+
+        if ($request->filled('cohort_id')) {
+            $query->where('cohort_id', $request->input('cohort_id'));
+        }
+
         $alerts = $query->paginate(30)->withQueryString();
+
+        $cohortsQuery = Cohort::orderBy('name');
+        if ($user->isInstructor()) {
+            $cohortsQuery->whereIn('id', $user->instructedCohorts()->pluck('id'));
+        }
 
         return Inertia::render('RiskAlerts/Index', [
             'alerts' => $alerts,
             'unresolvedCount' => $unresolvedCount,
-            'filters' => $request->only(['show_resolved']),
+            'cohorts' => $cohortsQuery->get(['id', 'name']),
+            'filters' => $request->only(['show_resolved', 'reason', 'cohort_id']),
         ]);
     }
 
