@@ -6,7 +6,7 @@
     @time-up="handleTimeUp"
   >
     <!-- テスト説明 -->
-    <div v-if="test.description" class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-6 text-sm text-blue-800">
+    <div v-if="test.description" class="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 mb-6 text-sm text-indigo-800">
       {{ test.description }}
     </div>
 
@@ -24,17 +24,17 @@
         v-for="(question, index) in test.questions"
         :key="question.id"
         class="bg-white rounded-lg border transition-colors"
-        :class="answers[question.id] ? 'border-gray-200' : 'border-orange-200'"
+        :class="answers[question.id] ? 'border-slate-200' : 'border-orange-200'"
       >
         <!-- 問題ヘッダー -->
         <div class="flex items-start justify-between px-5 pt-5 pb-3">
           <div class="flex items-start gap-3">
-            <span class="shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">
+            <span class="shrink-0 w-7 h-7 rounded-full bg-slate-100 text-slate-600 text-sm font-bold flex items-center justify-center">
               {{ index + 1 }}
             </span>
-            <p class="text-sm font-medium text-gray-900 leading-relaxed">{{ question.body }}</p>
+            <p class="text-sm font-medium text-slate-900 leading-relaxed">{{ question.body }}</p>
           </div>
-          <span class="shrink-0 text-xs text-gray-400 ml-4">{{ question.score }}点</span>
+          <span class="shrink-0 text-xs text-slate-400 ml-4">{{ question.score }}点</span>
         </div>
 
         <!-- 選択肢 -->
@@ -44,31 +44,31 @@
             :key="choice.id"
             class="flex items-center gap-3 p-3 rounded border cursor-pointer transition-colors"
             :class="answers[question.id] === choice.id
-              ? 'bg-blue-50 border-blue-400'
-              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+              ? 'bg-indigo-50 border-indigo-400'
+              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
           >
             <input
               type="radio"
               :name="`question_${question.id}`"
               :value="choice.id"
               v-model="answers[question.id]"
-              class="text-blue-600 focus:ring-blue-500"
+              class="text-indigo-600 focus:ring-indigo-500"
             />
-            <span class="text-sm text-gray-800">{{ choice.body }}</span>
+            <span class="text-sm text-slate-800">{{ choice.body }}</span>
           </label>
         </div>
       </div>
     </div>
 
     <!-- 提出ボタン -->
-    <div class="mt-8 flex items-center justify-between bg-white rounded-lg border border-gray-200 px-6 py-4">
-      <div class="text-sm text-gray-500">
-        <span class="font-medium text-gray-800">{{ answeredCount }}</span> / {{ test.questions?.length ?? 0 }} 問 回答済み
+    <div class="mt-8 flex items-center justify-between bg-white rounded-lg border border-slate-200 px-6 py-4">
+      <div class="text-sm text-slate-500">
+        <span class="font-medium text-slate-800">{{ answeredCount }}</span> / {{ test.questions?.length ?? 0 }} 問 回答済み
       </div>
       <button
         type="button"
         class="px-6 py-2.5 text-sm font-medium text-white rounded transition-colors"
-        :class="allAnswered ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 hover:bg-gray-500'"
+        :class="allAnswered ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-slate-400 hover:bg-slate-500'"
         @click="requestSubmit"
       >
         提出する

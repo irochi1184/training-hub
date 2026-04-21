@@ -9,22 +9,18 @@
   >
     <div v-if="visible" class="px-6 pt-4">
       <div
-        class="flex items-start gap-3 rounded-md px-4 py-3 text-sm font-medium"
-        :class="isSuccess ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'"
+        class="flex items-start gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-sm"
+        :class="isSuccess ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200'"
       >
-        <!-- アイコン -->
         <span class="shrink-0 mt-0.5">
-          <svg v-if="isSuccess" class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg v-if="isSuccess" class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
           </svg>
           <svg v-else class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
           </svg>
         </span>
-
         <span class="flex-1">{{ message }}</span>
-
-        <!-- 閉じるボタン -->
         <button
           type="button"
           class="shrink-0 ml-2 opacity-60 hover:opacity-100 transition-opacity"
@@ -47,7 +43,6 @@ import type { PageProps } from '@/types';
 const page = usePage<PageProps>();
 const visible = ref(false);
 
-// 現在のメッセージと種別
 const message = ref('');
 const isSuccess = ref(true);
 
@@ -63,7 +58,6 @@ function show(msg: string, success: boolean): void {
   }, 3000);
 }
 
-// flash の変化を監視して表示
 watch(
   () => page.props.flash,
   (flash) => {
@@ -74,7 +68,6 @@ watch(
   { deep: true },
 );
 
-// 初回マウント時にも確認
 onMounted(() => {
   const flash = page.props.flash;
   if (!flash) return;

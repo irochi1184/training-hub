@@ -2,13 +2,11 @@
   <AppLayout>
     <div class="max-w-6xl">
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">テスト一覧</h1>
-
-        <!-- 作成ボタン（admin/instructor のみ） -->
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">テスト一覧</h1>
         <Link
           v-if="canCreate"
           href="/tests/create"
-          class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
+          class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -17,19 +15,18 @@
         </Link>
       </div>
 
-      <!-- テーブル -->
       <DataTable
         :empty="tests.data.length === 0"
         empty-message="テストがありません"
         :col-span="canCreate ? 7 : 6"
       >
         <template #head>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">タイトル</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">コホート</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">問題数</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">公開期間</th>
-          <th v-if="canCreate" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">受験者数</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">状態</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">タイトル</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">コホート</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">問題数</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">公開期間</th>
+          <th v-if="canCreate" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">受験者数</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">状態</th>
           <th class="px-4 py-3"></th>
         </template>
 
@@ -37,19 +34,19 @@
           <tr
             v-for="test in tests.data"
             :key="test.id"
-            class="hover:bg-gray-50 transition-colors"
+            class="hover:bg-slate-50 transition-colors"
           >
-            <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ test.title }}</td>
-            <td class="px-4 py-3 text-sm text-gray-600">{{ test.cohort?.name ?? '—' }}</td>
-            <td class="px-4 py-3 text-sm text-gray-600">{{ test.questions_count ?? 0 }} 問</td>
-            <td class="px-4 py-3 text-xs text-gray-500">
+            <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ test.title }}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">{{ test.cohort?.name ?? '—' }}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">{{ test.questions_count ?? 0 }} 問</td>
+            <td class="px-4 py-3 text-xs text-slate-500">
               <span v-if="test.opens_at && test.closes_at">
                 {{ formatDate(test.opens_at) }}〜{{ formatDate(test.closes_at) }}
               </span>
               <span v-else-if="test.opens_at">{{ formatDate(test.opens_at) }}〜</span>
-              <span v-else class="text-gray-400">無期限</span>
+              <span v-else class="text-slate-400">無期限</span>
             </td>
-            <td v-if="canCreate" class="px-4 py-3 text-sm text-gray-600">
+            <td v-if="canCreate" class="px-4 py-3 text-sm text-slate-600">
               {{ test.submissions_count ?? 0 }} 名
             </td>
             <td class="px-4 py-3">
@@ -57,20 +54,17 @@
             </td>
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
-                <!-- student: 受験ボタン -->
                 <Link
                   v-if="isStudent && isAvailable(test)"
                   :href="`/tests/${test.id}/take`"
-                  class="text-sm font-medium text-white bg-blue-600 px-3 py-1.5 rounded hover:bg-blue-700 transition-colors"
+                  class="text-sm font-medium text-white bg-indigo-600 px-3 py-1.5 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors"
                 >
                   受験する
                 </Link>
-
-                <!-- admin/instructor: 編集・削除 -->
                 <template v-if="canCreate">
                   <Link
                     :href="`/tests/${test.id}/edit`"
-                    class="text-sm text-blue-600 hover:underline"
+                    class="text-sm text-indigo-600 hover:text-indigo-800"
                   >
                     編集
                   </Link>
@@ -93,7 +87,6 @@
       <Pagination :data="tests" />
     </div>
 
-    <!-- 削除確認ダイアログ -->
     <ConfirmDialog
       v-model="showDeleteDialog"
       title="テストの削除"
@@ -124,7 +117,6 @@ const user = computed(() => page.props.auth.user);
 const canCreate = computed(() => user.value.role === 'admin' || user.value.role === 'instructor');
 const isStudent = computed(() => user.value.role === 'student');
 
-// テストが受験可能期間内かどうか
 function isAvailable(test: Test): boolean {
   const now = new Date();
   if (test.opens_at && new Date(test.opens_at) > now) return false;
@@ -154,7 +146,6 @@ function formatDate(dateStr: string): string {
   });
 }
 
-// 削除
 const showDeleteDialog = ref(false);
 const deleteTarget = ref<Test | null>(null);
 

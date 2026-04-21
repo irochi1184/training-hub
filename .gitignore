@@ -23,3 +23,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+.clone/
+.claude/agent-memory/
+.claude/settings.local.json
+.claude/worktrees/
+/playwright/test-results/

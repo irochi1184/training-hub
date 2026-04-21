@@ -3,14 +3,14 @@
     <div class="max-w-5xl">
       <!-- ページヘッダー -->
       <div class="mb-6">
-        <Link href="/students" class="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mb-3">
+        <Link href="/students" class="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1 mb-3">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
           受講生一覧に戻る
         </Link>
         <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-bold text-gray-900">{{ student.name }}</h1>
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">{{ student.name }}</h1>
           <span
             v-if="hasUnresolvedAlert"
             class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700"
@@ -21,28 +21,28 @@
       </div>
 
       <!-- 基本情報カード -->
-      <div class="bg-white rounded-lg border border-gray-200 p-5 mb-6">
-        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">基本情報</h2>
+      <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6 mb-6">
+        <h2 class="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-4">基本情報</h2>
         <dl class="grid grid-cols-2 gap-4">
           <div>
-            <dt class="text-xs text-gray-500">メールアドレス</dt>
-            <dd class="mt-1 text-sm text-gray-900">{{ student.email }}</dd>
+            <dt class="text-xs text-slate-500">メールアドレス</dt>
+            <dd class="mt-1 text-sm text-slate-900">{{ student.email }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-gray-500">コホート</dt>
-            <dd class="mt-1 text-sm text-gray-900">
+            <dt class="text-xs text-slate-500">コホート</dt>
+            <dd class="mt-1 text-sm text-slate-900">
               {{ latestEnrollment?.cohort?.name ?? '未登録' }}
             </dd>
           </div>
           <div>
-            <dt class="text-xs text-gray-500">コース</dt>
-            <dd class="mt-1 text-sm text-gray-900">
+            <dt class="text-xs text-slate-500">コース</dt>
+            <dd class="mt-1 text-sm text-slate-900">
               {{ latestEnrollment?.cohort?.course?.name ?? '—' }}
             </dd>
           </div>
           <div>
-            <dt class="text-xs text-gray-500">受講登録日</dt>
-            <dd class="mt-1 text-sm text-gray-900">
+            <dt class="text-xs text-slate-500">受講登録日</dt>
+            <dd class="mt-1 text-sm text-slate-900">
               {{ latestEnrollment?.enrolled_at ?? '—' }}
             </dd>
           </div>
@@ -52,10 +52,10 @@
       <!-- サマリーセクション: 理解度推移 + テスト結果サマリー -->
       <div class="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-2">
         <!-- 理解度推移グラフ -->
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
-          <h2 class="text-sm font-semibold text-gray-700 mb-4">理解度推移（直近{{ understandingTrend.length }}件）</h2>
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
+          <h2 class="text-sm font-semibold text-slate-700 mb-4">理解度推移（直近{{ understandingTrend.length }}件）</h2>
 
-          <div v-if="understandingTrend.length === 0" class="flex items-center justify-center h-32 text-sm text-gray-400">
+          <div v-if="understandingTrend.length === 0" class="flex items-center justify-center h-32 text-sm text-slate-400">
             日報データがありません
           </div>
 
@@ -78,7 +78,7 @@
             </div>
 
             <!-- 凡例 -->
-            <div class="flex items-center gap-4 mt-3 text-xs text-gray-500">
+            <div class="flex items-center gap-4 mt-3 text-xs text-slate-500">
               <span class="flex items-center gap-1">
                 <span class="inline-block w-3 h-3 rounded-sm bg-red-400"></span>低い（1〜2）
               </span>
@@ -92,57 +92,57 @@
 
             <!-- 直近値 -->
             <div class="mt-3 flex items-center gap-2">
-              <span class="text-xs text-gray-500">直近の理解度:</span>
+              <span class="text-xs text-slate-500">直近の理解度:</span>
               <UnderstandingBadge :level="latestUnderstandingLevel" />
             </div>
           </div>
         </div>
 
         <!-- テスト結果サマリー -->
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
-          <h2 class="text-sm font-semibold text-gray-700 mb-4">テスト結果サマリー</h2>
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
+          <h2 class="text-sm font-semibold text-slate-700 mb-4">テスト結果サマリー</h2>
 
-          <div v-if="testSummary.count === 0" class="flex items-center justify-center h-32 text-sm text-gray-400">
+          <div v-if="testSummary.count === 0" class="flex items-center justify-center h-32 text-sm text-slate-400">
             受験記録がありません
           </div>
 
           <div v-else class="grid grid-cols-2 gap-3">
             <!-- 受験数 -->
-            <div class="rounded-lg bg-gray-50 border border-gray-100 p-3 text-center">
-              <div class="text-2xl font-bold text-gray-900">{{ testSummary.count }}</div>
-              <div class="text-xs text-gray-500 mt-1">受験数</div>
+            <div class="rounded-xl bg-slate-50 ring-1 ring-slate-900/5 p-4 text-center">
+              <div class="text-2xl font-bold text-slate-900">{{ testSummary.count }}</div>
+              <div class="text-xs text-slate-500 mt-1">受験数</div>
             </div>
 
             <!-- 平均点 -->
-            <div class="rounded-lg bg-blue-50 border border-blue-100 p-3 text-center">
-              <div class="text-2xl font-bold text-blue-700">
+            <div class="rounded-xl bg-indigo-50 ring-1 ring-indigo-200 p-4 text-center">
+              <div class="text-2xl font-bold text-indigo-700">
                 {{ testSummary.average !== null ? testSummary.average : '—' }}
               </div>
-              <div class="text-xs text-blue-500 mt-1">平均点</div>
+              <div class="text-xs text-indigo-500 mt-1">平均点</div>
             </div>
 
             <!-- 最高点 -->
-            <div class="rounded-lg bg-green-50 border border-green-100 p-3 text-center">
-              <div class="text-2xl font-bold text-green-700">
+            <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4 text-center">
+              <div class="text-2xl font-bold text-emerald-700">
                 {{ testSummary.max !== null ? testSummary.max : '—' }}
               </div>
-              <div class="text-xs text-green-500 mt-1">最高点</div>
+              <div class="text-xs text-emerald-500 mt-1">最高点</div>
             </div>
 
             <!-- 最低点 -->
             <div
-              class="rounded-lg border p-3 text-center"
-              :class="isLowScore ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'"
+              class="rounded-xl p-4 text-center"
+              :class="isLowScore ? 'bg-red-50 ring-1 ring-red-200' : 'bg-slate-50 ring-1 ring-slate-900/5'"
             >
               <div
                 class="text-2xl font-bold"
-                :class="isLowScore ? 'text-red-600' : 'text-gray-700'"
+                :class="isLowScore ? 'text-red-600' : 'text-slate-700'"
               >
                 {{ testSummary.min !== null ? testSummary.min : '—' }}
               </div>
               <div
                 class="text-xs mt-1"
-                :class="isLowScore ? 'text-red-400' : 'text-gray-500'"
+                :class="isLowScore ? 'text-red-400' : 'text-slate-500'"
               >
                 最低点
               </div>
@@ -152,7 +152,7 @@
       </div>
 
       <!-- タブ -->
-      <div class="border-b border-gray-200 mb-6">
+      <div class="border-b border-slate-200/60 mb-6">
         <nav class="flex gap-6">
           <button
             v-for="tab in tabs"
@@ -160,14 +160,14 @@
             type="button"
             class="pb-3 text-sm font-medium border-b-2 transition-colors"
             :class="activeTab === tab.key
-              ? 'border-blue-600 text-blue-700'
-              : 'border-transparent text-gray-500 hover:text-gray-800'"
+              ? 'border-indigo-600 text-indigo-700'
+              : 'border-transparent text-slate-500 hover:text-slate-800'"
             @click="activeTab = tab.key"
           >
             {{ tab.label }}
             <span
               v-if="tab.count !== undefined"
-              class="ml-1.5 text-xs text-gray-400"
+              class="ml-1.5 text-xs text-slate-400"
             >{{ tab.count }}</span>
           </button>
         </nav>
@@ -181,23 +181,23 @@
           :col-span="4"
         >
           <template #head>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">日付</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">理解度</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">学習内容（要約）</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">コメント</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">日付</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">理解度</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">学習内容（要約）</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">コメント</th>
           </template>
           <template #body>
             <tr
               v-for="report in dailyReports"
               :key="report.id"
-              class="hover:bg-gray-50 transition-colors"
+              class="hover:bg-slate-50 transition-colors"
             >
-              <td class="px-4 py-3 text-sm text-gray-900">{{ report.reported_on }}</td>
+              <td class="px-4 py-3 text-sm text-slate-900">{{ report.reported_on }}</td>
               <td class="px-4 py-3">
                 <UnderstandingBadge :level="report.understanding_level" />
               </td>
-              <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{{ report.content }}</td>
-              <td class="px-4 py-3 text-sm text-gray-500">
+              <td class="px-4 py-3 text-sm text-slate-600 max-w-xs truncate">{{ report.content }}</td>
+              <td class="px-4 py-3 text-sm text-slate-500">
                 {{ report.comments?.length ?? 0 }} 件
               </td>
             </tr>
@@ -213,29 +213,29 @@
           :col-span="4"
         >
           <template #head>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">テスト名</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">提出日時</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">得点</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase"></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">テスト名</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">提出日時</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">得点</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase"></th>
           </template>
           <template #body>
             <tr
               v-for="submission in submissions"
               :key="submission.id"
-              class="hover:bg-gray-50 transition-colors"
+              class="hover:bg-slate-50 transition-colors"
             >
-              <td class="px-4 py-3 text-sm text-gray-900">{{ submission.test?.title ?? '—' }}</td>
-              <td class="px-4 py-3 text-sm text-gray-600">
+              <td class="px-4 py-3 text-sm text-slate-900">{{ submission.test?.title ?? '—' }}</td>
+              <td class="px-4 py-3 text-sm text-slate-600">
                 {{ submission.submitted_at ? formatDate(submission.submitted_at) : '未提出' }}
               </td>
               <td class="px-4 py-3 text-sm font-medium">
-                <span v-if="submission.score !== null" class="text-gray-900">{{ submission.score }} 点</span>
-                <span v-else class="text-gray-400">採点中</span>
+                <span v-if="submission.score !== null" class="text-slate-900">{{ submission.score }} 点</span>
+                <span v-else class="text-slate-400">採点中</span>
               </td>
               <td class="px-4 py-3">
                 <Link
                   :href="`/submissions/${submission.id}`"
-                  class="text-sm text-blue-600 hover:underline"
+                  class="text-sm text-indigo-600 hover:text-indigo-800"
                 >
                   詳細
                 </Link>
@@ -253,22 +253,22 @@
           :col-span="4"
         >
           <template #head>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">理由</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">詳細</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">発生日</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">状態</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">理由</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">詳細</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">発生日</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">状態</th>
           </template>
           <template #body>
             <tr
               v-for="alert in riskAlerts"
               :key="alert.id"
-              class="hover:bg-gray-50 transition-colors"
+              class="hover:bg-slate-50 transition-colors"
             >
               <td class="px-4 py-3">
                 <ReasonBadge :reason="alert.reason" />
               </td>
-              <td class="px-4 py-3 text-sm text-gray-600">{{ alert.detail ?? '—' }}</td>
-              <td class="px-4 py-3 text-sm text-gray-600">{{ formatDate(alert.created_at) }}</td>
+              <td class="px-4 py-3 text-sm text-slate-600">{{ alert.detail ?? '—' }}</td>
+              <td class="px-4 py-3 text-sm text-slate-600">{{ formatDate(alert.created_at) }}</td>
               <td class="px-4 py-3">
                 <span
                   v-if="alert.resolved_at"

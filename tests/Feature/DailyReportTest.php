@@ -73,6 +73,44 @@ class DailyReportTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page->component('DailyReports/Show'));
     }
 
+    /** 同日・同コホートの日報を再提出すると既存レコードが更新される */
+    public function test_同日の日報を再提出すると更新される(): void
+    {
+        $student = User::factory()->student()->create();
+        $cohort = Cohort::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+
+        $date = today()->toDateString();
+
+        // 1回目の提出
+        $this->actingAs($student)->post('/daily-reports', [
+            'cohort_id' => $cohort->id,
+            'reported_on' => $date,
+            'understanding_level' => 3,
+            'content' => '最初の内容です。',
+        ]);
+
+        // 2回目（同日・同コホート）の提出
+        $response = $this->actingAs($student)->post('/daily-reports', [
+            'cohort_id' => $cohort->id,
+            'reported_on' => $date,
+            'understanding_level' => 5,
+            'content' => '更新後の内容です。',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success', '日報を更新しました');
+
+        // レコードは1件のみで、内容が更新されていること
+        $this->assertDatabaseCount('daily_reports', 1);
+        $this->assertDatabaseHas('daily_reports', [
+            'user_id' => $student->id,
+            'cohort_id' => $cohort->id,
+            'understanding_level' => 5,
+            'content' => '更新後の内容です。',
+        ]);
+    }
+
     /** understanding_level が 0 だとバリデーションエラー */
     public function test_理解度が0だとバリデーションエラーになる(): void
     {

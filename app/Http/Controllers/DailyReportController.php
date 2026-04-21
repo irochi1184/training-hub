@@ -70,8 +70,23 @@ class DailyReportController extends Controller
     {
         $this->authorize('create', DailyReport::class);
 
+        $validated = $request->validated();
+
+        // 同日・同コホートの重複提出チェック
+        $existing = DailyReport::where('user_id', $request->user()->id)
+            ->where('cohort_id', $validated['cohort_id'])
+            ->whereDate('reported_on', $validated['reported_on'])
+            ->first();
+
+        if ($existing) {
+            // 既存の日報を更新
+            $existing->update($validated);
+            return redirect()->route('daily-reports.show', $existing)
+                ->with('success', '日報を更新しました');
+        }
+
         $report = DailyReport::create([
-            ...$request->validated(),
+            ...$validated,
             'user_id' => $request->user()->id,
         ]);
 
