@@ -75,9 +75,13 @@ php artisan key:generate
 # Feature / Unit
 php vendor/bin/phpunit --no-coverage
 
-# Playwright E2E(事前に php artisan serve を別ターミナルで起動)
-PLAYWRIGHT_BASE_URL=http://localhost:8000 npx playwright test
+# Playwright E2E
+npx playwright test
 ```
+
+Playwright は `playwright/global-setup.ts` で実行前に `migrate:fresh --seed --force` を走らせ、
+`playwright.config.ts` の `webServer` 設定により `127.0.0.1:8000` で専用の `php artisan serve` を
+自動起動するため、別ターミナルでの事前起動は不要。別ポートに向ける場合は `PLAYWRIGHT_BASE_URL` を上書きする。
 
 ## 主要コマンド
 
