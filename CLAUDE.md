@@ -60,8 +60,7 @@
 
 - organizations
 - users
-- courses
-- cohorts
+- curricula
 - students
 - enrollments
 - daily_reports

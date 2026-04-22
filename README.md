@@ -97,7 +97,7 @@ Playwright は `playwright/global-setup.ts` で実行前に `migrate:fresh --see
 ## ロールと権限
 
 - **admin**: 組織全体の受講生・日報・テスト・要注意者・CSV出力を管理
-- **instructor**: 担当コホートの受講生・日報閲覧、テスト作成、コメント投稿
+- **instructor**: 担当カリキュラムの受講生・日報閲覧、テスト作成、コメント投稿
 - **student**: 自身の日報提出、テスト受験、結果確認
 
 詳細は [docs/permissions.md](docs/permissions.md) を参照。
@@ -112,7 +112,7 @@ Playwright は `playwright/global-setup.ts` で実行前に `migrate:fresh --see
 
 ## 要注意者検知の定期実行
 
-実施中のコホートに対する要注意者検知は `risk:detect` コマンドで実行する。
+実施中のカリキュラムに対する要注意者検知は `risk:detect` コマンドで実行する。
 
 ```bash
 php artisan risk:detect

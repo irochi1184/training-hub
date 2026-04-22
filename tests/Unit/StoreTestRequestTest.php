@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Http\Requests\StoreTestRequest;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
@@ -15,10 +15,10 @@ class StoreTestRequestTest extends TestCase
     /** 正しい入力でバリデーションが通る */
     public function test_有効な入力でバリデーションが通る(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $validator = $this->makeValidator([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'title' => 'テストタイトル',
             'questions' => [
                 [
@@ -38,10 +38,10 @@ class StoreTestRequestTest extends TestCase
     /** closes_at が opens_at 以前だと失敗する */
     public function test_closes_atがopens_atより前だとエラー(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $validator = $this->makeValidator([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'title' => 'テスト',
             'opens_at' => '2026-05-01 00:00:00',
             'closes_at' => '2026-04-30 00:00:00',
@@ -62,10 +62,10 @@ class StoreTestRequestTest extends TestCase
     /** 選択肢が1つしかないと失敗する */
     public function test_選択肢が1つだけだとエラー(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $validator = $this->makeValidator([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'title' => 'テスト',
             'questions' => [[
                 'body' => '設問',
@@ -82,10 +82,10 @@ class StoreTestRequestTest extends TestCase
     /** questions が空だと失敗する */
     public function test_questionsが空だとエラー(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $validator = $this->makeValidator([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'title' => 'テスト',
             'questions' => [],
         ]);
@@ -97,10 +97,10 @@ class StoreTestRequestTest extends TestCase
     /** score が0以下だと失敗する */
     public function test_scoreが0以下だとエラー(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $validator = $this->makeValidator([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'title' => 'テスト',
             'questions' => [[
                 'body' => '設問',

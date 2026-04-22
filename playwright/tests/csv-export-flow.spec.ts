@@ -8,20 +8,20 @@ test.describe('CSV出力フロー', () => {
         await page.goto('/exports');
         await expect(page.getByRole('heading', { name: 'CSV出力' })).toBeVisible();
 
-        // コホート選択 (cohort_id は required)
-        // 日報CSVブロックの最初の select がコホート
-        const cohortSelect = page.locator('select').first();
-        const cohortOptions = cohortSelect.locator('option[value]:not([value=""])');
-        if ((await cohortOptions.count()) === 0) {
+        // カリキュラム選択 (curriculum_id は required)
+        // 日報CSVブロックの最初の select がカリキュラム
+        const curriculumSelect = page.locator('select').first();
+        const curriculumOptions = curriculumSelect.locator('option[value]:not([value=""])');
+        if ((await curriculumOptions.count()) === 0) {
             test.skip();
             return;
         }
-        const firstCohortValue = await cohortOptions.first().getAttribute('value');
-        if (!firstCohortValue) {
+        const firstCurriculumValue = await curriculumOptions.first().getAttribute('value');
+        if (!firstCurriculumValue) {
             test.skip();
             return;
         }
-        await cohortSelect.selectOption(firstCohortValue);
+        await curriculumSelect.selectOption(firstCurriculumValue);
 
         // 日報CSV ダウンロードリンクをクリックし、download イベントを待つ
         const downloadPromise = page.waitForEvent('download');

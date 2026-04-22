@@ -13,9 +13,9 @@ test.describe('テスト作成フロー', () => {
         // タイトルを入力する（placeholder で特定）
         await page.getByPlaceholder('例: 第1回 HTTPの基礎').fill('PHPの基礎テスト');
 
-        // コホートを選択する（index 1 = 最初の実際の選択肢）
-        const cohortSelect = page.locator('select').first();
-        await cohortSelect.selectOption({ index: 1 });
+        // カリキュラムを選択する（index 1 = 最初の実際の選択肢）
+        const curriculumSelect = page.locator('select').first();
+        await curriculumSelect.selectOption({ index: 1 });
 
         // 問題を追加する
         await page.getByRole('button', { name: '問題を追加' }).click();

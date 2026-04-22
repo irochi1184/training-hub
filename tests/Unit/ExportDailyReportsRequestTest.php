@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Http\Requests\ExportDailyReportsRequest;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
@@ -15,10 +15,10 @@ class ExportDailyReportsRequestTest extends TestCase
     /** 日付範囲なしでも通る */
     public function test_日付範囲未指定でも通る(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $validator = $this->makeValidator([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
         ]);
 
         $this->assertTrue($validator->passes());
@@ -27,10 +27,10 @@ class ExportDailyReportsRequestTest extends TestCase
     /** date_to が date_from より前だとエラー */
     public function test_date_toがdate_fromより前だとエラー(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $validator = $this->makeValidator([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'date_from' => '2026-05-01',
             'date_to' => '2026-04-30',
         ]);
@@ -42,10 +42,10 @@ class ExportDailyReportsRequestTest extends TestCase
     /** date_to == date_from は通る（after_or_equal） */
     public function test_date_toとdate_fromが同日なら通る(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $validator = $this->makeValidator([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'date_from' => '2026-04-22',
             'date_to' => '2026-04-22',
         ]);
@@ -53,15 +53,15 @@ class ExportDailyReportsRequestTest extends TestCase
         $this->assertTrue($validator->passes());
     }
 
-    /** cohort_id が存在しないとエラー */
-    public function test_cohort_idが存在しないとエラー(): void
+    /** curriculum_id が存在しないとエラー */
+    public function test_curriculum_idが存在しないとエラー(): void
     {
         $validator = $this->makeValidator([
-            'cohort_id' => 99999,
+            'curriculum_id' => 99999,
         ]);
 
         $this->assertTrue($validator->fails());
-        $this->assertArrayHasKey('cohort_id', $validator->errors()->toArray());
+        $this->assertArrayHasKey('curriculum_id', $validator->errors()->toArray());
     }
 
     private function makeValidator(array $data): \Illuminate\Contracts\Validation\Validator
