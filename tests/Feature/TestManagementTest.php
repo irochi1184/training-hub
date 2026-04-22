@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\Submission;
 use App\Models\Test;
 use App\Models\User;
@@ -18,10 +18,10 @@ class TestManagementTest extends TestCase
     public function test_instructorがテストを作成できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $cohort = Cohort::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
 
         $response = $this->actingAs($instructor)->post('/tests', [
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'title' => 'PHPの基礎テスト',
             'description' => null,
             'time_limit_minutes' => null,
@@ -43,7 +43,7 @@ class TestManagementTest extends TestCase
 
         $response->assertRedirect(route('tests.index'));
         $this->assertDatabaseHas('tests', [
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'title' => 'PHPの基礎テスト',
         ]);
         $this->assertDatabaseHas('questions', ['body' => 'PHPの変数定義に使う記号は？']);
@@ -65,14 +65,14 @@ class TestManagementTest extends TestCase
     public function test_受験者がいるテストは更新できない(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $cohort = Cohort::factory()->create(['instructor_id' => $instructor->id]);
-        $test = Test::factory()->create(['cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
 
         // 受験者を作成する
         Submission::factory()->create(['test_id' => $test->id]);
 
         $response = $this->actingAs($instructor)->put("/tests/{$test->id}", [
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'title' => '更新後タイトル',
             'questions' => [
                 [
@@ -93,11 +93,11 @@ class TestManagementTest extends TestCase
     public function test_受験者がいないテストは更新できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $cohort = Cohort::factory()->create(['instructor_id' => $instructor->id]);
-        $test = Test::factory()->create(['cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($instructor)->put("/tests/{$test->id}", [
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'title' => '更新後タイトル',
             'questions' => [
                 [

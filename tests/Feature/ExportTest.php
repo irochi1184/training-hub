@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\Test;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,10 +16,10 @@ class ExportTest extends TestCase
     public function test_adminが日報CSVをダウンロードできる(): void
     {
         $admin = User::factory()->admin()->create();
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $response = $this->actingAs($admin)->get('/exports/daily-reports?' . http_build_query([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
         ]));
 
         $response->assertStatus(200);

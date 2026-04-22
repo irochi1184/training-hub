@@ -46,13 +46,13 @@
             <option value="low_score">得点率低下</option>
           </select>
           <select
-            :value="filters.cohort_id ?? ''"
+            :value="filters.curriculum_id ?? ''"
             class="text-sm border border-slate-300 rounded px-3 py-1.5 focus:ring-indigo-500 focus:border-indigo-500"
-            @change="applyFilter({ cohort_id: ($event.target as HTMLSelectElement).value || undefined })"
+            @change="applyFilter({ curriculum_id: ($event.target as HTMLSelectElement).value || undefined })"
           >
-            <option value="">すべてのコホート</option>
-            <option v-for="cohort in cohorts" :key="cohort.id" :value="cohort.id">
-              {{ cohort.name }}
+            <option value="">すべてのカリキュラム</option>
+            <option v-for="curriculum in curricula" :key="curriculum.id" :value="curriculum.id">
+              {{ curriculum.name }}
             </option>
           </select>
           <button
@@ -87,7 +87,7 @@
       >
         <template #head>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">受講生</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">コホート</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">カリキュラム</th>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">理由</th>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">詳細</th>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">発生日</th>
@@ -109,7 +109,7 @@
                 {{ alert.user?.name ?? '—' }}
               </Link>
             </td>
-            <td class="px-4 py-3 text-sm text-slate-600">{{ alert.cohort?.name ?? '—' }}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">{{ alert.curriculum?.name ?? '—' }}</td>
             <td class="px-4 py-3">
               <ReasonBadge :reason="alert.reason" />
             </td>
@@ -155,29 +155,29 @@ import DataTable from '@/Components/DataTable.vue';
 import Pagination from '@/Components/Pagination.vue';
 import ReasonBadge from '@/Components/ReasonBadge.vue';
 
-type CohortOption = { id: number; name: string };
+type CurriculumOption = { id: number; name: string };
 
 const props = defineProps<{
   alerts: PaginatedData<RiskAlert>;
   unresolvedCount: number;
-  cohorts: CohortOption[];
+  curricula: CurriculumOption[];
   filters: {
     show_resolved?: string;
     reason?: string;
-    cohort_id?: string;
+    curriculum_id?: string;
   };
 }>();
 
 const showResolved = computed(() => props.filters.show_resolved === '1');
 
 const hasActiveFilter = computed(
-  () => Boolean(props.filters.reason) || Boolean(props.filters.cohort_id),
+  () => Boolean(props.filters.reason) || Boolean(props.filters.curriculum_id),
 );
 
 type FilterPatch = {
   show_resolved?: boolean;
   reason?: string | undefined;
-  cohort_id?: string | undefined;
+  curriculum_id?: string | undefined;
 };
 
 function applyFilter(patch: FilterPatch): void {
@@ -189,8 +189,8 @@ function applyFilter(patch: FilterPatch): void {
   const nextReason = 'reason' in patch ? patch.reason : props.filters.reason;
   if (nextReason) query.reason = nextReason;
 
-  const nextCohortId = 'cohort_id' in patch ? patch.cohort_id : props.filters.cohort_id;
-  if (nextCohortId) query.cohort_id = String(nextCohortId);
+  const nextCurriculumId = 'curriculum_id' in patch ? patch.curriculum_id : props.filters.curriculum_id;
+  if (nextCurriculumId) query.curriculum_id = String(nextCurriculumId);
 
   router.get('/risk-alerts', query, { preserveState: true, replace: true });
 }

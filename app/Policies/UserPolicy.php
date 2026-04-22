@@ -54,7 +54,7 @@ class UserPolicy
             return false;
         }
 
-        return $instructor->instructedCohorts()
+        return $instructor->instructedCurricula()
             ->whereHas('enrollments', fn ($q) => $q->where('user_id', $student->id))
             ->exists();
     }

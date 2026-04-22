@@ -39,25 +39,25 @@
             />
           </div>
 
-          <!-- コホート -->
+          <!-- カリキュラム -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">
-              コホート <span class="text-red-500">*</span>
+              カリキュラム <span class="text-red-500">*</span>
             </label>
             <select
-              v-model="form.cohort_id"
+              v-model="form.curriculum_id"
               required
               class="block w-full rounded border px-3 py-2 text-sm text-slate-900 focus:ring-1 focus:outline-none transition-colors"
-              :class="form.errors.cohort_id
+              :class="form.errors.curriculum_id
                 ? 'border-red-400 focus:border-red-400 focus:ring-red-400'
                 : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500'"
             >
               <option value="" disabled>選択してください</option>
-              <option v-for="cohort in cohorts" :key="cohort.id" :value="cohort.id">
-                {{ cohort.name }}
+              <option v-for="curriculum in curricula" :key="curriculum.id" :value="curriculum.id">
+                {{ curriculum.name }}
               </option>
             </select>
-            <p v-if="form.errors.cohort_id" class="mt-1 text-xs text-red-600">{{ form.errors.cohort_id }}</p>
+            <p v-if="form.errors.curriculum_id" class="mt-1 text-xs text-red-600">{{ form.errors.curriculum_id }}</p>
           </div>
 
           <!-- 制限時間・公開期間 -->
@@ -243,11 +243,11 @@
 
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
-import type { Cohort } from '@/types';
+import type { Curriculum } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 const props = defineProps<{
-  cohorts: Cohort[];
+  curricula: Curriculum[];
 }>();
 
 interface ChoiceForm {
@@ -279,7 +279,7 @@ function defaultQuestion(): QuestionForm {
 const form = useForm<{
   title: string;
   description: string;
-  cohort_id: string | number;
+  curriculum_id: string | number;
   time_limit_minutes: number | null;
   opens_at: string;
   closes_at: string;
@@ -287,7 +287,7 @@ const form = useForm<{
 }>({
   title: '',
   description: '',
-  cohort_id: '',
+  curriculum_id: '',
   time_limit_minutes: null,
   opens_at: '',
   closes_at: '',

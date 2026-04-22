@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\RiskAlertReason;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\RiskAlert;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,12 +25,12 @@ class RiskAlertTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page->component('RiskAlerts/Index'));
     }
 
-    /** instructor が担当コホートのアラートを解消できる */
+    /** instructor が担当カリキュラムのアラートを解消できる */
     public function test_instructorがアラートを解消できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $cohort = Cohort::factory()->create(['instructor_id' => $instructor->id]);
-        $alert = RiskAlert::factory()->create(['cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $alert = RiskAlert::factory()->create(['curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($instructor)->patch("/risk-alerts/{$alert->id}/resolve");
 
@@ -52,15 +52,15 @@ class RiskAlertTest extends TestCase
     public function test_reason絞り込みが適用される(): void
     {
         $admin = User::factory()->admin()->create();
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $matching = RiskAlert::factory()->create([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'reason' => RiskAlertReason::ReportMissing->value,
             'resolved_at' => null,
         ]);
         $other = RiskAlert::factory()->create([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'reason' => RiskAlertReason::LowUnderstanding->value,
             'resolved_at' => null,
         ]);
@@ -76,17 +76,17 @@ class RiskAlertTest extends TestCase
         );
     }
 
-    /** cohort_id クエリでコホート別に絞り込める */
-    public function test_cohort絞り込みが適用される(): void
+    /** curriculum_id クエリでカリキュラム別に絞り込める */
+    public function test_curriculum絞り込みが適用される(): void
     {
         $admin = User::factory()->admin()->create();
-        $targetCohort = Cohort::factory()->create();
-        $otherCohort = Cohort::factory()->create();
+        $targetCurriculum = Curriculum::factory()->create();
+        $otherCurriculum = Curriculum::factory()->create();
 
-        $matching = RiskAlert::factory()->create(['cohort_id' => $targetCohort->id, 'resolved_at' => null]);
-        RiskAlert::factory()->create(['cohort_id' => $otherCohort->id, 'resolved_at' => null]);
+        $matching = RiskAlert::factory()->create(['curriculum_id' => $targetCurriculum->id, 'resolved_at' => null]);
+        RiskAlert::factory()->create(['curriculum_id' => $otherCurriculum->id, 'resolved_at' => null]);
 
-        $response = $this->actingAs($admin)->get("/risk-alerts?cohort_id={$targetCohort->id}");
+        $response = $this->actingAs($admin)->get("/risk-alerts?curriculum_id={$targetCurriculum->id}");
 
         $response->assertStatus(200);
         $response->assertInertia(fn (Assert $page) => $page
@@ -95,19 +95,19 @@ class RiskAlertTest extends TestCase
         );
     }
 
-    /** instructor には担当コホートのみが cohorts プロパティに含まれる */
-    public function test_instructorのコホート選択肢は担当分のみ(): void
+    /** instructor には担当カリキュラムのみが curricula プロパティに含まれる */
+    public function test_instructorのカリキュラム選択肢は担当分のみ(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $mine = Cohort::factory()->create(['instructor_id' => $instructor->id]);
-        $others = Cohort::factory()->create();
+        $mine = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $others = Curriculum::factory()->create();
 
         $response = $this->actingAs($instructor)->get('/risk-alerts');
 
         $response->assertStatus(200);
         $response->assertInertia(fn (Assert $page) => $page
-            ->has('cohorts', 1)
-            ->where('cohorts.0.id', $mine->id)
+            ->has('curricula', 1)
+            ->where('curricula.0.id', $mine->id)
         );
     }
 }

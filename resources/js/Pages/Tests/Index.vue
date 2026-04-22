@@ -22,7 +22,7 @@
       >
         <template #head>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">タイトル</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">コホート</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">カリキュラム</th>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">問題数</th>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">公開期間</th>
           <th v-if="canCreate" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">受験者数</th>
@@ -37,7 +37,7 @@
             class="hover:bg-slate-50 transition-colors"
           >
             <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ test.title }}</td>
-            <td class="px-4 py-3 text-sm text-slate-600">{{ test.cohort?.name ?? '—' }}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">{{ test.curriculum?.name ?? '—' }}</td>
             <td class="px-4 py-3 text-sm text-slate-600">{{ test.questions_count ?? 0 }} 問</td>
             <td class="px-4 py-3 text-xs text-slate-500">
               <span v-if="test.opens_at && test.closes_at">

@@ -8,12 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Cohort extends Model
+class Curriculum extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'curricula';
+
     protected $fillable = [
-        'course_id',
+        'organization_id',
         'instructor_id',
         'name',
         'starts_on',
@@ -28,9 +30,9 @@ class Cohort extends Model
         ];
     }
 
-    public function course(): BelongsTo
+    public function organization(): BelongsTo
     {
-        return $this->belongsTo(Course::class);
+        return $this->belongsTo(Organization::class);
     }
 
     public function instructor(): BelongsTo

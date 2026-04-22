@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\Test;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,7 +20,7 @@ class QuizFactory extends Factory
     public function definition(): array
     {
         return [
-            'cohort_id' => Cohort::factory(),
+            'curriculum_id' => Curriculum::factory(),
             'created_by' => User::factory()->instructor(),
             'title' => fake()->words(4, true) . 'テスト',
             'description' => fake()->optional()->sentence(),

@@ -4,29 +4,29 @@
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight mb-6">日報入力</h1>
 
       <form @submit.prevent="submit" class="space-y-6">
-        <!-- コホート選択 -->
+        <!-- カリキュラム選択 -->
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6 space-y-5">
           <h2 class="text-sm font-semibold text-slate-700">基本情報</h2>
 
           <div>
-            <label for="cohort_id" class="block text-sm font-medium text-slate-700 mb-1">
-              コホート <span class="text-red-500">*</span>
+            <label for="curriculum_id" class="block text-sm font-medium text-slate-700 mb-1">
+              カリキュラム <span class="text-red-500">*</span>
             </label>
             <select
-              id="cohort_id"
-              v-model="form.cohort_id"
+              id="curriculum_id"
+              v-model="form.curriculum_id"
               required
               class="block w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:ring-1 focus:outline-none transition-colors"
-              :class="form.errors.cohort_id
+              :class="form.errors.curriculum_id
                 ? 'border-red-400 focus:border-red-400 focus:ring-red-400'
                 : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500'"
             >
               <option value="" disabled>選択してください</option>
-              <option v-for="cohort in cohorts" :key="cohort.id" :value="cohort.id">
-                {{ cohort.name }}
+              <option v-for="curriculum in curricula" :key="curriculum.id" :value="curriculum.id">
+                {{ curriculum.name }}
               </option>
             </select>
-            <p v-if="form.errors.cohort_id" class="mt-1 text-xs text-red-600">{{ form.errors.cohort_id }}</p>
+            <p v-if="form.errors.curriculum_id" class="mt-1 text-xs text-red-600">{{ form.errors.curriculum_id }}</p>
           </div>
 
           <div>
@@ -144,11 +144,11 @@
 
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
-import type { Cohort } from '@/types';
+import type { Curriculum } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 const props = defineProps<{
-  cohorts: Cohort[];
+  curricula: Curriculum[];
   today: string; // 'YYYY-MM-DD'
 }>();
 
@@ -186,7 +186,7 @@ const understandingOptions = [
 ];
 
 const form = useForm({
-  cohort_id: '',
+  curriculum_id: '',
   reported_on: props.today,
   understanding_level: 0 as number,
   content: '',

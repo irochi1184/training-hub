@@ -11,14 +11,14 @@ return new class extends Migration
         Schema::create('risk_alerts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('cohort_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('curriculum_id')->constrained('curricula')->cascadeOnDelete();
             $table->enum('reason', ['low_understanding', 'report_missing', 'low_score']);
             $table->text('detail')->nullable();
             $table->dateTime('resolved_at')->nullable();
             $table->timestamps();
 
-            $table->index(['user_id', 'cohort_id']);
-            $table->index(['cohort_id', 'resolved_at']);
+            $table->index(['user_id', 'curriculum_id']);
+            $table->index(['curriculum_id', 'resolved_at']);
         });
     }
 

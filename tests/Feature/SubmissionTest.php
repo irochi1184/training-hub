@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Choice;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\Enrollment;
 use App\Models\Question;
 use App\Models\Submission;
@@ -18,10 +18,10 @@ class SubmissionTest extends TestCase
     use RefreshDatabase;
 
     /** テストと問題・選択肢のセットを用意するヘルパー */
-    private function createTestWithQuestions(Cohort $cohort): array
+    private function createTestWithQuestions(Curriculum $curriculum): array
     {
         $test = Test::factory()->create([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'opens_at' => null,
             'closes_at' => null,
         ]);
@@ -41,10 +41,10 @@ class SubmissionTest extends TestCase
     public function test_studentがテスト受験画面を表示できる(): void
     {
         $student = User::factory()->student()->create();
-        $cohort = Cohort::factory()->create();
-        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
-        [$test] = $this->createTestWithQuestions($cohort);
+        [$test] = $this->createTestWithQuestions($curriculum);
 
         $response = $this->actingAs($student)->get("/tests/{$test->id}/take");
 
@@ -56,10 +56,10 @@ class SubmissionTest extends TestCase
     public function test_studentがテストを提出すると自動採点される(): void
     {
         $student = User::factory()->student()->create();
-        $cohort = Cohort::factory()->create();
-        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
-        [$test, $question, $correctChoice] = $this->createTestWithQuestions($cohort);
+        [$test, $question, $correctChoice] = $this->createTestWithQuestions($curriculum);
 
         // take アクセスで Submission を事前生成する
         $this->actingAs($student)->get("/tests/{$test->id}/take");
@@ -96,10 +96,10 @@ class SubmissionTest extends TestCase
     public function test_受験済みのテストを再度受験しようとするとリダイレクトされる(): void
     {
         $student = User::factory()->student()->create();
-        $cohort = Cohort::factory()->create();
-        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
-        [$test, $question, $correctChoice] = $this->createTestWithQuestions($cohort);
+        [$test, $question, $correctChoice] = $this->createTestWithQuestions($curriculum);
 
         // 受験済みの提出を作成する
         $submission = Submission::factory()->submitted()->create([
@@ -122,10 +122,10 @@ class SubmissionTest extends TestCase
     public function test_受験済みのテスト受験画面にアクセスすると結果ページへリダイレクトされる(): void
     {
         $student = User::factory()->student()->create();
-        $cohort = Cohort::factory()->create();
-        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
-        [$test] = $this->createTestWithQuestions($cohort);
+        [$test] = $this->createTestWithQuestions($curriculum);
 
         // 受験済みの提出を作成する
         $submission = Submission::factory()->submitted()->create([
@@ -143,10 +143,10 @@ class SubmissionTest extends TestCase
     public function test_受験中のテストに再アクセスすると継続できる(): void
     {
         $student = User::factory()->student()->create();
-        $cohort = Cohort::factory()->create();
-        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
-        [$test] = $this->createTestWithQuestions($cohort);
+        [$test] = $this->createTestWithQuestions($curriculum);
 
         // 受験中（未提出）の提出を作成する
         $submission = Submission::factory()->create([

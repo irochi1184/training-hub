@@ -12,16 +12,16 @@
           </div>
 
           <div class="space-y-4">
-            <!-- コホート選択 -->
+            <!-- カリキュラム選択 -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">コホート</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">カリキュラム</label>
               <select
-                v-model="reportForm.cohort_id"
+                v-model="reportForm.curriculum_id"
                 class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               >
                 <option value="">すべて</option>
-                <option v-for="cohort in cohorts" :key="cohort.id" :value="cohort.id">
-                  {{ cohort.name }}
+                <option v-for="curriculum in curricula" :key="curriculum.id" :value="curriculum.id">
+                  {{ curriculum.name }}
                 </option>
               </select>
             </div>
@@ -81,7 +81,7 @@
               >
                 <option value="" disabled>テストを選択してください</option>
                 <option v-for="test in tests" :key="test.id" :value="test.id">
-                  {{ test.cohort?.name ? `[${test.cohort.name}] ` : '' }}{{ test.title }}
+                  {{ test.curriculum?.name ? `[${test.curriculum.name}] ` : '' }}{{ test.title }}
                 </option>
               </select>
             </div>
@@ -114,17 +114,17 @@
 
 <script setup lang="ts">
 import { reactive, computed } from 'vue';
-import type { Cohort, Test } from '@/types';
+import type { Curriculum, Test } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 const props = defineProps<{
-  cohorts: Cohort[];
+  curricula: Curriculum[];
   tests: Test[];
 }>();
 
 // 日報CSV フォーム状態
 const reportForm = reactive({
-  cohort_id: '',
+  curriculum_id: '',
   date_from: '',
   date_to: '',
 });
@@ -137,7 +137,7 @@ const testResultForm = reactive({
 // 日報CSVダウンロードURL（クエリパラメータ付き）
 const reportDownloadUrl = computed(() => {
   const params = new URLSearchParams();
-  if (reportForm.cohort_id) params.set('cohort_id', String(reportForm.cohort_id));
+  if (reportForm.curriculum_id) params.set('curriculum_id', String(reportForm.curriculum_id));
   if (reportForm.date_from) params.set('date_from', reportForm.date_from);
   if (reportForm.date_to) params.set('date_to', reportForm.date_to);
   const query = params.toString();

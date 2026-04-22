@@ -29,15 +29,9 @@
             <dd class="mt-1 text-sm text-slate-900">{{ student.email }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-slate-500">コホート</dt>
+            <dt class="text-xs text-slate-500">カリキュラム</dt>
             <dd class="mt-1 text-sm text-slate-900">
-              {{ latestEnrollment?.cohort?.name ?? '未登録' }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-slate-500">コース</dt>
-            <dd class="mt-1 text-sm text-slate-900">
-              {{ latestEnrollment?.cohort?.course?.name ?? '—' }}
+              {{ latestEnrollment?.curriculum?.name ?? '未登録' }}
             </dd>
           </div>
           <div>

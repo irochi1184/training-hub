@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDailyReportRequest;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\DailyReport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,16 +18,16 @@ class DailyReportController extends Controller
 
         $user = $request->user();
 
-        $query = DailyReport::with(['user', 'cohort', 'comments.user'])
+        $query = DailyReport::with(['user', 'curriculum', 'comments.user'])
             ->orderByDesc('reported_on');
 
         if ($user->isInstructor()) {
-            $cohortIds = $user->instructedCohorts()->pluck('id');
-            $query->whereIn('cohort_id', $cohortIds);
+            $curriculumIds = $user->instructedCurricula()->pluck('id');
+            $query->whereIn('curriculum_id', $curriculumIds);
         }
 
-        if ($request->filled('cohort_id')) {
-            $query->where('cohort_id', $request->integer('cohort_id'));
+        if ($request->filled('curriculum_id')) {
+            $query->where('curriculum_id', $request->integer('curriculum_id'));
         }
 
         if ($request->filled('date_from')) {
@@ -40,16 +40,16 @@ class DailyReportController extends Controller
 
         $reports = $query->paginate(30)->withQueryString();
 
-        $cohortsQuery = Cohort::orderBy('name');
+        $curriculaQuery = Curriculum::orderBy('name');
         if ($user->isInstructor()) {
-            $cohortsQuery->whereIn('id', $user->instructedCohorts()->pluck('id'));
+            $curriculaQuery->whereIn('id', $user->instructedCurricula()->pluck('id'));
         }
-        $cohorts = $cohortsQuery->get();
+        $curricula = $curriculaQuery->get();
 
         return Inertia::render('DailyReports/Index', [
             'reports' => $reports,
-            'cohorts' => $cohorts,
-            'filters' => $request->only(['cohort_id', 'date_from', 'date_to']),
+            'curricula' => $curricula,
+            'filters' => $request->only(['curriculum_id', 'date_from', 'date_to']),
         ]);
     }
 
@@ -58,10 +58,10 @@ class DailyReportController extends Controller
         $this->authorize('create', DailyReport::class);
 
         $user = $request->user();
-        $cohorts = $user->enrollments()->with('cohort')->get()->pluck('cohort');
+        $curricula = $user->enrollments()->with('curriculum')->get()->pluck('curriculum');
 
         return Inertia::render('DailyReports/Create', [
-            'cohorts' => $cohorts,
+            'curricula' => $curricula,
             'today'   => now()->format('Y-m-d'),
         ]);
     }
@@ -72,14 +72,12 @@ class DailyReportController extends Controller
 
         $validated = $request->validated();
 
-        // 同日・同コホートの重複提出チェック
         $existing = DailyReport::where('user_id', $request->user()->id)
-            ->where('cohort_id', $validated['cohort_id'])
+            ->where('curriculum_id', $validated['curriculum_id'])
             ->whereDate('reported_on', $validated['reported_on'])
             ->first();
 
         if ($existing) {
-            // 既存の日報を更新
             $existing->update($validated);
             return redirect()->route('daily-reports.show', $existing)
                 ->with('success', '日報を更新しました');
@@ -98,7 +96,7 @@ class DailyReportController extends Controller
     {
         $this->authorize('view', $report);
 
-        $report->load(['user', 'cohort', 'comments.user']);
+        $report->load(['user', 'curriculum', 'comments.user']);
 
         return Inertia::render('DailyReports/Show', ['report' => $report]);
     }

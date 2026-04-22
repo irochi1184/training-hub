@@ -43,7 +43,7 @@
       <template v-else-if="user.role === 'instructor'">
         <div class="grid grid-cols-3 gap-5 mb-8">
           <StatCard
-            label="担当コホート要注意者"
+            label="担当カリキュラム要注意者"
             :value="instructorStats.risk_alert_count"
             :alert="instructorStats.risk_alert_count > 0"
             unit="名"

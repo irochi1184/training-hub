@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTestRequest;
 use App\Http\Requests\UpdateTestRequest;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\Test;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,14 +19,14 @@ class TestController extends Controller
 
         $user = $request->user();
 
-        $query = Test::with(['cohort', 'creator'])
+        $query = Test::with(['curriculum', 'creator'])
             ->withCount('submissions')
             ->orderByDesc('created_at');
 
         if ($user->isStudent()) {
-            $cohortIds = $user->enrollments()->pluck('cohort_id');
+            $curriculumIds = $user->enrollments()->pluck('curriculum_id');
             $now = now();
-            $query->whereIn('cohort_id', $cohortIds)
+            $query->whereIn('curriculum_id', $curriculumIds)
                 ->where(fn ($q) => $q
                     ->whereNull('opens_at')
                     ->orWhere('opens_at', '<=', $now)
@@ -36,8 +36,8 @@ class TestController extends Controller
                     ->orWhere('closes_at', '>=', $now)
                 );
         } elseif ($user->isInstructor()) {
-            $cohortIds = $user->instructedCohorts()->pluck('id');
-            $query->whereIn('cohort_id', $cohortIds);
+            $curriculumIds = $user->instructedCurricula()->pluck('id');
+            $query->whereIn('curriculum_id', $curriculumIds);
         }
 
         $tests = $query->paginate(20);
@@ -51,11 +51,11 @@ class TestController extends Controller
 
         $user = $request->user();
 
-        $cohorts = $user->isAdmin()
-            ? Cohort::with('course')->orderBy('name')->get()
-            : $user->instructedCohorts()->with('course')->orderBy('name')->get();
+        $curricula = $user->isAdmin()
+            ? Curriculum::orderBy('name')->get()
+            : $user->instructedCurricula()->orderBy('name')->get();
 
-        return Inertia::render('Tests/Create', ['cohorts' => $cohorts]);
+        return Inertia::render('Tests/Create', ['curricula' => $curricula]);
     }
 
     public function store(StoreTestRequest $request): RedirectResponse
@@ -65,7 +65,7 @@ class TestController extends Controller
         $validated = $request->validated();
 
         $test = Test::create([
-            'cohort_id' => $validated['cohort_id'],
+            'curriculum_id' => $validated['curriculum_id'],
             'created_by' => $request->user()->id,
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
@@ -97,14 +97,14 @@ class TestController extends Controller
     {
         $this->authorize('update', $test);
 
-        $test->load(['questions.choices', 'cohort']);
+        $test->load(['questions.choices', 'curriculum']);
 
         $user = auth()->user();
-        $cohorts = $user->isAdmin()
-            ? Cohort::with('course')->orderBy('name')->get()
-            : $user->instructedCohorts()->with('course')->orderBy('name')->get();
+        $curricula = $user->isAdmin()
+            ? Curriculum::orderBy('name')->get()
+            : $user->instructedCurricula()->orderBy('name')->get();
 
-        return Inertia::render('Tests/Edit', ['test' => $test, 'cohorts' => $cohorts]);
+        return Inertia::render('Tests/Edit', ['test' => $test, 'curricula' => $curricula]);
     }
 
     public function update(UpdateTestRequest $request, Test $test): RedirectResponse
@@ -114,7 +114,7 @@ class TestController extends Controller
         $validated = $request->validated();
 
         $test->update([
-            'cohort_id' => $validated['cohort_id'],
+            'curriculum_id' => $validated['curriculum_id'],
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'time_limit_minutes' => $validated['time_limit_minutes'] ?? null,

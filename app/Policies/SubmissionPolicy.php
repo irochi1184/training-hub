@@ -21,7 +21,7 @@ class SubmissionPolicy
         }
 
         if ($user->isInstructor()) {
-            return $submission->test->cohort->instructor_id === $user->id;
+            return $submission->test->curriculum->instructor_id === $user->id;
         }
 
         return $user->id === $submission->user_id;

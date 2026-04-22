@@ -42,15 +42,15 @@
 
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">
-              コホート <span class="text-red-500">*</span>
+              カリキュラム <span class="text-red-500">*</span>
             </label>
             <select
-              v-model="form.cohort_id"
+              v-model="form.curriculum_id"
               required
               class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
             >
-              <option v-for="cohort in cohorts" :key="cohort.id" :value="cohort.id">
-                {{ cohort.name }}
+              <option v-for="curriculum in curricula" :key="curriculum.id" :value="curriculum.id">
+                {{ curriculum.name }}
               </option>
             </select>
           </div>
@@ -221,12 +221,12 @@
 
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
-import type { Test, Cohort } from '@/types';
+import type { Test, Curriculum } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 const props = defineProps<{
   test: Test;
-  cohorts: Cohort[];
+  curricula: Curriculum[];
 }>();
 
 interface ChoiceForm {
@@ -246,7 +246,7 @@ interface QuestionForm {
 const form = useForm<{
   title: string;
   description: string;
-  cohort_id: number | string;
+  curriculum_id: number | string;
   time_limit_minutes: number | null;
   opens_at: string;
   closes_at: string;
@@ -254,7 +254,7 @@ const form = useForm<{
 }>({
   title: props.test.title,
   description: props.test.description ?? '',
-  cohort_id: props.test.cohort_id,
+  curriculum_id: props.test.curriculum_id,
   time_limit_minutes: props.test.time_limit_minutes ?? null,
   opens_at: props.test.opens_at ? toDatetimeLocal(props.test.opens_at) : '',
   closes_at: props.test.closes_at ? toDatetimeLocal(props.test.closes_at) : '',

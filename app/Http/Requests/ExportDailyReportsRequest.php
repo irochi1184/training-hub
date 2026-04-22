@@ -14,7 +14,7 @@ class ExportDailyReportsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cohort_id' => ['required', 'integer', 'exists:cohorts,id'],
+            'curriculum_id' => ['required', 'integer', 'exists:curricula,id'],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
         ];
