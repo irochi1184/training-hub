@@ -123,7 +123,25 @@ export interface RiskAlert {
 
 export interface UnderstandingTrendItem {
   date: string;
-  level: number; // 1〜5
+  level: number | null; // 1〜5、未提出日は null
+}
+
+export interface DashboardRiskAlert {
+  id: number;
+  reason: 'low_understanding' | 'report_missing' | 'low_score';
+  detail: string | null;
+  created_at: string | null;
+  user_name: string | null;
+  curriculum_name: string | null;
+}
+
+export interface CurriculumSummary {
+  id: number;
+  name: string;
+  enrollment_count: number;
+  avg_understanding: number | null;
+  avg_score: number | null;
+  unresolved_alert_count: number;
 }
 
 export interface TestSummary {
