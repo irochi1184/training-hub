@@ -10,9 +10,9 @@ test.describe('日報提出フロー', () => {
         await page.goto('/daily-reports/create');
         await page.waitForLoadState('networkidle');
 
-        // コホートを選択する（index 1 = 最初の実際の選択肢。index 0 はプレースホルダー）
-        const cohortSelect = page.locator('select#cohort_id');
-        await cohortSelect.selectOption({ index: 1 });
+        // カリキュラムを選択する（index 1 = 最初の実際の選択肢。index 0 はプレースホルダー）
+        const curriculumSelect = page.locator('select#curriculum_id');
+        await curriculumSelect.selectOption({ index: 1 });
 
         // 日付を入力する（ラベルは「日付」）
         const today = new Date().toISOString().split('T')[0];

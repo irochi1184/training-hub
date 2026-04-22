@@ -17,8 +17,8 @@ class Organization extends Model
         return $this->hasMany(User::class);
     }
 
-    public function courses(): HasMany
+    public function curricula(): HasMany
     {
-        return $this->hasMany(Course::class);
+        return $this->hasMany(Curriculum::class);
     }
 }

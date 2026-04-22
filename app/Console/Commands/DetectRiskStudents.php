@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Actions\DetectRiskAction;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -11,22 +11,22 @@ class DetectRiskStudents extends Command
 {
     protected $signature = 'risk:detect';
 
-    protected $description = '実施中のコホートに対して要注意者検知を実行する';
+    protected $description = '実施中のカリキュラムに対して要注意者検知を実行する';
 
     public function handle(DetectRiskAction $action): int
     {
         $today = Carbon::today();
 
-        $cohorts = Cohort::where('starts_on', '<=', $today)
+        $curricula = Curriculum::where('starts_on', '<=', $today)
             ->where('ends_on', '>=', $today)
             ->get();
 
-        foreach ($cohorts as $cohort) {
-            $action->execute($cohort);
-            $this->line("detected: {$cohort->name}");
+        foreach ($curricula as $curriculum) {
+            $action->execute($curriculum);
+            $this->line("detected: {$curriculum->name}");
         }
 
-        $this->info("要注意者検知を {$cohorts->count()} 件のコホートで実行しました");
+        $this->info("要注意者検知を {$curricula->count()} 件のカリキュラムで実行しました");
 
         return self::SUCCESS;
     }

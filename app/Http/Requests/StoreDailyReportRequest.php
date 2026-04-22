@@ -14,7 +14,7 @@ class StoreDailyReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cohort_id' => ['required', 'integer', 'exists:cohorts,id'],
+            'curriculum_id' => ['required', 'integer', 'exists:curricula,id'],
             'reported_on' => ['required', 'date'],
             'understanding_level' => ['required', 'integer', 'between:1,5'],
             'content' => ['required', 'string'],

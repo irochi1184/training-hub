@@ -13,7 +13,7 @@ class DailyReport extends Model
 
     protected $fillable = [
         'user_id',
-        'cohort_id',
+        'curriculum_id',
         'reported_on',
         'understanding_level',
         'content',
@@ -33,9 +33,9 @@ class DailyReport extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function cohort(): BelongsTo
+    public function curriculum(): BelongsTo
     {
-        return $this->belongsTo(Cohort::class);
+        return $this->belongsTo(Curriculum::class);
     }
 
     public function comments(): HasMany

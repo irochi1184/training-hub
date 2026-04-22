@@ -13,43 +13,36 @@ export interface Organization {
   name: string;
 }
 
-export interface Course {
+export interface Curriculum {
   id: number;
-  name: string;
-  description: string | null;
-}
-
-export interface Cohort {
-  id: number;
-  course_id: number;
+  organization_id: number;
   instructor_id: number;
   name: string;
   starts_on: string;
   ends_on: string;
-  course?: Course;
   instructor?: User;
 }
 
 export interface Enrollment {
   id: number;
-  cohort_id: number;
+  curriculum_id: number;
   user_id: number;
   enrolled_at: string;
-  cohort?: Cohort;
+  curriculum?: Curriculum;
   user?: User;
 }
 
 export interface DailyReport {
   id: number;
   user_id: number;
-  cohort_id: number;
+  curriculum_id: number;
   reported_on: string;
   understanding_level: number; // 1〜5
   content: string;
   impression: string | null;
   created_at: string;
   user?: User;
-  cohort?: Cohort;
+  curriculum?: Curriculum;
   comments?: DailyReportComment[];
 }
 
@@ -64,14 +57,14 @@ export interface DailyReportComment {
 
 export interface Test {
   id: number;
-  cohort_id: number;
+  curriculum_id: number;
   created_by: number;
   title: string;
   description: string | null;
   time_limit_minutes: number | null;
   opens_at: string | null;
   closes_at: string | null;
-  cohort?: Cohort;
+  curriculum?: Curriculum;
   questions?: Question[];
   questions_count?: number;
   submissions_count?: number;
@@ -119,13 +112,13 @@ export interface Answer {
 export interface RiskAlert {
   id: number;
   user_id: number;
-  cohort_id: number;
+  curriculum_id: number;
   reason: 'low_understanding' | 'report_missing' | 'low_score';
   detail: string | null;
   resolved_at: string | null;
   created_at: string;
   user?: User;
-  cohort?: Cohort;
+  curriculum?: Curriculum;
 }
 
 export interface UnderstandingTrendItem {

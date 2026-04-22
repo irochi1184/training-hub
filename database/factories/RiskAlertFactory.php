@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\RiskAlertReason;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\RiskAlert;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -17,7 +17,7 @@ class RiskAlertFactory extends Factory
     {
         return [
             'user_id' => User::factory()->student(),
-            'cohort_id' => Cohort::factory(),
+            'curriculum_id' => Curriculum::factory(),
             'reason' => fake()->randomElement(RiskAlertReason::cases())->value,
             'detail' => fake()->sentence(),
             'resolved_at' => null,

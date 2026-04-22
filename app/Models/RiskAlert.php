@@ -13,7 +13,7 @@ class RiskAlert extends Model
 
     protected $fillable = [
         'user_id',
-        'cohort_id',
+        'curriculum_id',
         'reason',
         'detail',
         'resolved_at',
@@ -32,9 +32,9 @@ class RiskAlert extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function cohort(): BelongsTo
+    public function curriculum(): BelongsTo
     {
-        return $this->belongsTo(Cohort::class);
+        return $this->belongsTo(Curriculum::class);
     }
 
     public function isResolved(): bool

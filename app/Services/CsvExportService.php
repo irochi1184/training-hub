@@ -10,10 +10,10 @@ class CsvExportService
 {
     private const BOM = "\xEF\xBB\xBF";
 
-    public function exportDailyReports(int $cohortId, ?string $dateFrom, ?string $dateTo): StreamedResponse
+    public function exportDailyReports(int $curriculumId, ?string $dateFrom, ?string $dateTo): StreamedResponse
     {
-        $query = DailyReport::with(['user', 'cohort'])
-            ->where('cohort_id', $cohortId)
+        $query = DailyReport::with(['user', 'curriculum'])
+            ->where('curriculum_id', $curriculumId)
             ->orderBy('reported_on')
             ->orderBy('user_id');
 
@@ -31,13 +31,13 @@ class CsvExportService
             $handle = fopen('php://output', 'w');
             fwrite($handle, self::BOM);
 
-            fputcsv($handle, ['日付', '受講生名', 'コホート名', '理解度', '学習内容', '感想・気づき']);
+            fputcsv($handle, ['日付', '受講生名', 'カリキュラム名', '理解度', '学習内容', '感想・気づき']);
 
             foreach ($reports as $report) {
                 fputcsv($handle, [
                     $report->reported_on->format('Y-m-d'),
                     $report->user->name,
-                    $report->cohort->name,
+                    $report->curriculum->name,
                     $report->understanding_level,
                     $report->content,
                     $report->impression ?? '',

@@ -59,9 +59,9 @@ class User extends Authenticatable
         return $this->hasMany(DailyReportComment::class);
     }
 
-    public function instructedCohorts(): HasMany
+    public function instructedCurricula(): HasMany
     {
-        return $this->hasMany(Cohort::class, 'instructor_id');
+        return $this->hasMany(Curriculum::class, 'instructor_id');
     }
 
     public function submissions(): HasMany

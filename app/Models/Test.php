@@ -20,7 +20,7 @@ class Test extends Model
     }
 
     protected $fillable = [
-        'cohort_id',
+        'curriculum_id',
         'created_by',
         'title',
         'description',
@@ -37,9 +37,9 @@ class Test extends Model
         ];
     }
 
-    public function cohort(): BelongsTo
+    public function curriculum(): BelongsTo
     {
-        return $this->belongsTo(Cohort::class);
+        return $this->belongsTo(Curriculum::class);
     }
 
     public function creator(): BelongsTo

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('tests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cohort_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('curriculum_id')->constrained('curricula')->cascadeOnDelete();
             $table->foreignId('created_by')->constrained('users');
             $table->string('title');
             $table->text('description')->nullable();
@@ -19,8 +19,8 @@ return new class extends Migration
             $table->dateTime('closes_at')->nullable();
             $table->timestamps();
 
-            $table->index('cohort_id');
-            $table->index(['cohort_id', 'opens_at', 'closes_at']);
+            $table->index('curriculum_id');
+            $table->index(['curriculum_id', 'opens_at', 'closes_at']);
         });
     }
 

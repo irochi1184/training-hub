@@ -23,7 +23,7 @@
             <p class="text-sm text-slate-500">
               提出者: <span class="font-medium text-slate-700">{{ report.user?.name ?? '—' }}</span>
               <span class="mx-2 text-slate-300">|</span>
-              {{ report.cohort?.name ?? '—' }}
+              {{ report.curriculum?.name ?? '—' }}
             </p>
           </div>
           <UnderstandingBadge :level="report.understanding_level" />

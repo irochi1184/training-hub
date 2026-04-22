@@ -10,16 +10,16 @@
       <!-- フィルター -->
       <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-5 mb-5">
         <form @submit.prevent="applyFilter" class="flex items-end gap-4">
-          <!-- コホート絞り込み -->
+          <!-- カリキュラム絞り込み -->
           <div class="flex-1">
-            <label class="block text-xs font-medium text-slate-500 mb-1">コホート</label>
+            <label class="block text-xs font-medium text-slate-500 mb-1">カリキュラム</label>
             <select
-              v-model="filterForm.cohort_id"
+              v-model="filterForm.curriculum_id"
               class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
             >
               <option value="">すべて</option>
-              <option v-for="cohort in cohorts" :key="cohort.id" :value="cohort.id">
-                {{ cohort.name }}
+              <option v-for="curriculum in curricula" :key="curriculum.id" :value="curriculum.id">
+                {{ curriculum.name }}
               </option>
             </select>
           </div>
@@ -63,7 +63,7 @@
         <template #head>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">名前</th>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">メール</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">コホート</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">カリキュラム</th>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">最新理解度</th>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">状態</th>
         </template>
@@ -84,7 +84,7 @@
             </td>
             <td class="px-4 py-3 text-sm text-slate-600">{{ student.email }}</td>
             <td class="px-4 py-3 text-sm text-slate-600">
-              {{ student.latest_enrollment?.cohort?.name ?? '—' }}
+              {{ student.latest_enrollment?.curriculum?.name ?? '—' }}
             </td>
             <td class="px-4 py-3">
               <UnderstandingBadge
@@ -118,7 +118,7 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import type { Cohort, PaginatedData } from '@/types';
+import type { Curriculum, PaginatedData } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
 import Pagination from '@/Components/Pagination.vue';
@@ -132,21 +132,21 @@ interface StudentListItem {
   latest_understanding_level: number | null;
   has_unresolved_alert: boolean;
   latest_enrollment?: {
-    cohort?: Cohort;
+    curriculum?: Curriculum;
   };
 }
 
 const props = defineProps<{
   students: PaginatedData<StudentListItem>;
-  cohorts: Cohort[];
+  curricula: Curriculum[];
   filters: {
-    cohort_id?: string;
+    curriculum_id?: string;
     search?: string;
   };
 }>();
 
 const filterForm = reactive({
-  cohort_id: props.filters.cohort_id ?? '',
+  curriculum_id: props.filters.curriculum_id ?? '',
   search: props.filters.search ?? '',
 });
 
@@ -155,7 +155,7 @@ function applyFilter(): void {
 }
 
 function clearFilter(): void {
-  filterForm.cohort_id = '';
+  filterForm.curriculum_id = '';
   filterForm.search = '';
   router.get('/students', {}, { preserveState: true, replace: true });
 }

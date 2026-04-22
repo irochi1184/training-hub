@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\DailyReport;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -16,7 +16,7 @@ class DailyReportFactory extends Factory
     {
         return [
             'user_id' => User::factory()->student(),
-            'cohort_id' => Cohort::factory(),
+            'curriculum_id' => Curriculum::factory(),
             'reported_on' => fake()->dateTimeBetween('-30 days', 'now')->format('Y-m-d'),
             'understanding_level' => fake()->numberBetween(1, 5),
             'content' => fake()->paragraphs(2, true),

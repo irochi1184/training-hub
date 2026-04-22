@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\RiskAlertReason;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\RiskAlert;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,12 +19,12 @@ class RiskAlertController extends Controller
 
         $user = $request->user();
 
-        $query = RiskAlert::with(['user', 'cohort'])
+        $query = RiskAlert::with(['user', 'curriculum'])
             ->orderByDesc('created_at');
 
         if ($user->isInstructor()) {
-            $cohortIds = $user->instructedCohorts()->pluck('id');
-            $query->whereIn('cohort_id', $cohortIds);
+            $curriculumIds = $user->instructedCurricula()->pluck('id');
+            $query->whereIn('curriculum_id', $curriculumIds);
         }
 
         $unresolvedCount = (clone $query)->whereNull('resolved_at')->count();
@@ -40,22 +40,22 @@ class RiskAlertController extends Controller
             }
         }
 
-        if ($request->filled('cohort_id')) {
-            $query->where('cohort_id', $request->input('cohort_id'));
+        if ($request->filled('curriculum_id')) {
+            $query->where('curriculum_id', $request->input('curriculum_id'));
         }
 
         $alerts = $query->paginate(30)->withQueryString();
 
-        $cohortsQuery = Cohort::orderBy('name');
+        $curriculaQuery = Curriculum::orderBy('name');
         if ($user->isInstructor()) {
-            $cohortsQuery->whereIn('id', $user->instructedCohorts()->pluck('id'));
+            $curriculaQuery->whereIn('id', $user->instructedCurricula()->pluck('id'));
         }
 
         return Inertia::render('RiskAlerts/Index', [
             'alerts' => $alerts,
             'unresolvedCount' => $unresolvedCount,
-            'cohorts' => $cohortsQuery->get(['id', 'name']),
-            'filters' => $request->only(['show_resolved', 'reason', 'cohort_id']),
+            'curricula' => $curriculaQuery->get(['id', 'name']),
+            'filters' => $request->only(['show_resolved', 'reason', 'curriculum_id']),
         ]);
     }
 

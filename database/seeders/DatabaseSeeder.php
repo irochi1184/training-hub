@@ -6,8 +6,7 @@ use App\Enums\RiskAlertReason;
 use App\Enums\UserRole;
 use App\Models\Answer;
 use App\Models\Choice;
-use App\Models\Cohort;
-use App\Models\Course;
+use App\Models\Curriculum;
 use App\Models\DailyReport;
 use App\Models\Enrollment;
 use App\Models\Organization;
@@ -62,58 +61,43 @@ class DatabaseSeeder extends Seeder
             ]));
         }
 
-        $course1 = Course::create([
+        $curriculum1Start = Carbon::today()->subMonths(3);
+        $curriculum1End = Carbon::today()->addMonths(3);
+        $curriculum2Start = Carbon::today()->subMonth();
+        $curriculum2End = Carbon::today()->addMonths(5);
+
+        $curriculum1 = Curriculum::create([
             'organization_id' => $org->id,
-            'name' => 'Webアプリ開発基礎',
-            'description' => 'HTMLからLaravelまで学ぶ入門コース',
-        ]);
-
-        $course2 = Course::create([
-            'organization_id' => $org->id,
-            'name' => 'データ分析入門',
-            'description' => 'PythonとPandasを使ったデータ分析コース',
-        ]);
-
-        // 実施中の期として現在日を含む期間に設定
-        $cohort1Start = Carbon::today()->subMonths(3);
-        $cohort1End = Carbon::today()->addMonths(3);
-        $cohort2Start = Carbon::today()->subMonth();
-        $cohort2End = Carbon::today()->addMonths(5);
-
-        $cohort1 = Cohort::create([
-            'course_id' => $course1->id,
             'instructor_id' => $instructor1->id,
-            'name' => $cohort1Start->format('Y年n月') . '期',
-            'starts_on' => $cohort1Start->toDateString(),
-            'ends_on' => $cohort1End->toDateString(),
+            'name' => 'IT研修',
+            'starts_on' => $curriculum1Start->toDateString(),
+            'ends_on' => $curriculum1End->toDateString(),
         ]);
 
-        $cohort2 = Cohort::create([
-            'course_id' => $course2->id,
+        $curriculum2 = Curriculum::create([
+            'organization_id' => $org->id,
             'instructor_id' => $instructor2->id,
-            'name' => $cohort2Start->format('Y年n月') . '期',
-            'starts_on' => $cohort2Start->toDateString(),
-            'ends_on' => $cohort2End->toDateString(),
+            'name' => 'ロジック研修【Java】',
+            'starts_on' => $curriculum2Start->toDateString(),
+            'ends_on' => $curriculum2End->toDateString(),
         ]);
 
-        // 受講生をコホートに登録（1〜3をcohort1、4〜5をcohort2）
         foreach ($students->slice(0, 3) as $student) {
             Enrollment::create([
-                'cohort_id' => $cohort1->id,
+                'curriculum_id' => $curriculum1->id,
                 'user_id' => $student->id,
-                'enrolled_at' => $cohort1Start->toDateString(),
+                'enrolled_at' => $curriculum1Start->toDateString(),
             ]);
         }
 
         foreach ($students->slice(3, 2) as $student) {
             Enrollment::create([
-                'cohort_id' => $cohort2->id,
+                'curriculum_id' => $curriculum2->id,
                 'user_id' => $student->id,
-                'enrolled_at' => $cohort2Start->toDateString(),
+                'enrolled_at' => $curriculum2Start->toDateString(),
             ]);
         }
 
-        // 日報を数日分作成（cohort1の受講生）
         $reportDates = [
             Carbon::today()->subDays(4),
             Carbon::today()->subDays(3),
@@ -125,7 +109,7 @@ class DatabaseSeeder extends Seeder
             foreach ($reportDates as $dateOffset => $date) {
                 DailyReport::create([
                     'user_id' => $student->id,
-                    'cohort_id' => $cohort1->id,
+                    'curriculum_id' => $curriculum1->id,
                     'reported_on' => $date->format('Y-m-d'),
                     'understanding_level' => max(1, min(5, 3 + ($index % 3) - 1)),
                     'content' => "HTMLの基本構造について学びました。タグの意味と使い方を理解しました。",
@@ -134,9 +118,8 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // テストを1つ作成（cohort1）
         $test = Test::create([
-            'cohort_id' => $cohort1->id,
+            'curriculum_id' => $curriculum1->id,
             'created_by' => $instructor1->id,
             'title' => 'HTML基礎テスト',
             'description' => 'HTMLの基本的な知識を確認するテストです',
@@ -220,7 +203,6 @@ class DatabaseSeeder extends Seeder
             $questions->push(['question' => $question, 'choices' => $choiceModels]);
         }
 
-        // cohort1の受講生2名がテストを受験・採点済みにする
         foreach ($students->slice(0, 2) as $student) {
             $submission = Submission::create([
                 'test_id' => $test->id,
@@ -236,7 +218,6 @@ class DatabaseSeeder extends Seeder
                 $choices = $questionData['choices'];
                 $correctChoice = $choices->firstWhere('is_correct', true);
 
-                // 1問目はあえて不正解にする
                 $selectedChoice = $question->position === 1
                     ? $choices->firstWhere('is_correct', false)
                     : $correctChoice;
@@ -258,10 +239,9 @@ class DatabaseSeeder extends Seeder
             $submission->update(['score' => $totalScore]);
         }
 
-        // リスクアラートのサンプルを1件作成
         RiskAlert::create([
             'user_id' => $students->get(0)->id,
-            'cohort_id' => $cohort1->id,
+            'curriculum_id' => $curriculum1->id,
             'reason' => RiskAlertReason::LowUnderstanding->value,
             'detail' => '理解度平均: 2.0',
             'resolved_at' => null,

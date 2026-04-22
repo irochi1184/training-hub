@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ExportDailyReportsRequest;
 use App\Http\Requests\ExportTestResultsRequest;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\Test;
 use App\Services\CsvExportService;
 use Illuminate\Support\Facades\Gate;
@@ -20,11 +20,11 @@ class ExportController extends Controller
     {
         Gate::authorize('viewAny-export');
 
-        $cohorts = Cohort::with('course')->orderBy('name')->get();
-        $tests = Test::with('cohort')->orderByDesc('created_at')->get();
+        $curricula = Curriculum::orderBy('name')->get();
+        $tests = Test::with('curriculum')->orderByDesc('created_at')->get();
 
         return Inertia::render('Exports/Index', [
-            'cohorts' => $cohorts,
+            'curricula' => $curricula,
             'tests' => $tests,
         ]);
     }
@@ -34,7 +34,7 @@ class ExportController extends Controller
         Gate::authorize('exportDailyReports');
 
         return $this->csvExportService->exportDailyReports(
-            cohortId: (int) $request->validated('cohort_id'),
+            curriculumId: (int) $request->validated('curriculum_id'),
             dateFrom: $request->validated('date_from'),
             dateTo: $request->validated('date_to'),
         );

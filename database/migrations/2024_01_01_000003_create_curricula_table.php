@@ -8,9 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('cohorts', function (Blueprint $table) {
+        Schema::create('curricula', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('course_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->foreignId('instructor_id')->constrained('users');
             $table->string('name');
             $table->date('starts_on');
@@ -18,13 +18,13 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
 
-            $table->index('course_id');
+            $table->index('organization_id');
             $table->index('instructor_id');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('cohorts');
+        Schema::dropIfExists('curricula');
     }
 };

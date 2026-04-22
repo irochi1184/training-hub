@@ -32,23 +32,21 @@ class DashboardController extends Controller
     {
         $riskAlertCount = RiskAlert::whereNull('resolved_at')->count();
 
-        // 本日の日報提出率
         $totalStudents = \App\Models\User::where('role', UserRole::Student)->count();
         $todayReports = DailyReport::where('reported_on', Carbon::today())->distinct('user_id')->count('user_id');
         $todayReportRate = $totalStudents > 0 ? round(($todayReports / $totalStudents) * 100) : 0;
 
-        // テスト受験完了率（コホートごとに受講生数 × テスト数を集計）
-        $enrollmentCountByCohort = Enrollment::selectRaw('cohort_id, COUNT(*) as count')
-            ->groupBy('cohort_id')
-            ->pluck('count', 'cohort_id');
+        $enrollmentCountByCurriculum = Enrollment::selectRaw('curriculum_id, COUNT(*) as count')
+            ->groupBy('curriculum_id')
+            ->pluck('count', 'curriculum_id');
 
-        $testCountByCohort = TestModel::selectRaw('cohort_id, COUNT(*) as count')
-            ->groupBy('cohort_id')
-            ->pluck('count', 'cohort_id');
+        $testCountByCurriculum = TestModel::selectRaw('curriculum_id, COUNT(*) as count')
+            ->groupBy('curriculum_id')
+            ->pluck('count', 'curriculum_id');
 
         $totalSubmissionsExpected = 0;
-        foreach ($testCountByCohort as $cohortId => $testCount) {
-            $totalSubmissionsExpected += $testCount * $enrollmentCountByCohort->get($cohortId, 0);
+        foreach ($testCountByCurriculum as $curriculumId => $testCount) {
+            $totalSubmissionsExpected += $testCount * $enrollmentCountByCurriculum->get($curriculumId, 0);
         }
 
         $completedSubmissions = Submission::whereNotNull('submitted_at')->count();
@@ -67,18 +65,17 @@ class DashboardController extends Controller
 
     private function instructorData(\App\Models\User $user): array
     {
-        $cohortIds = $user->instructedCohorts()->pluck('id');
+        $curriculumIds = $user->instructedCurricula()->pluck('id');
 
-        $riskAlertCount = RiskAlert::whereIn('cohort_id', $cohortIds)
+        $riskAlertCount = RiskAlert::whereIn('curriculum_id', $curriculumIds)
             ->whereNull('resolved_at')
             ->count();
 
-        $todayReportCount = DailyReport::whereIn('cohort_id', $cohortIds)
+        $todayReportCount = DailyReport::whereIn('curriculum_id', $curriculumIds)
             ->where('reported_on', Carbon::today())
             ->count();
 
-        // 直近テスト平均点
-        $recentTest = TestModel::whereIn('cohort_id', $cohortIds)->latest()->first();
+        $recentTest = TestModel::whereIn('curriculum_id', $curriculumIds)->latest()->first();
         $recentTestAvg = null;
         if ($recentTest) {
             $avg = Submission::where('test_id', $recentTest->id)
@@ -103,7 +100,7 @@ class DashboardController extends Controller
             ->exists();
 
         $latestReport = $user->dailyReports()
-            ->with('cohort')
+            ->with('curriculum')
             ->orderByDesc('reported_on')
             ->first();
 

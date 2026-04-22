@@ -38,7 +38,7 @@ class TestPolicy
         }
 
         if ($user->isInstructor()) {
-            return $test->cohort->instructor_id === $user->id;
+            return $test->curriculum->instructor_id === $user->id;
         }
 
         return false;
@@ -55,7 +55,7 @@ class TestPolicy
         }
 
         if ($user->isInstructor()) {
-            return $test->cohort->instructor_id === $user->id;
+            return $test->curriculum->instructor_id === $user->id;
         }
 
         return false;

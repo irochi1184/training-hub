@@ -11,7 +11,7 @@ class Enrollment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cohort_id',
+        'curriculum_id',
         'user_id',
         'enrolled_at',
     ];
@@ -23,9 +23,9 @@ class Enrollment extends Model
         ];
     }
 
-    public function cohort(): BelongsTo
+    public function curriculum(): BelongsTo
     {
-        return $this->belongsTo(Cohort::class);
+        return $this->belongsTo(Curriculum::class);
     }
 
     public function user(): BelongsTo

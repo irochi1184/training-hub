@@ -6,9 +6,8 @@
 |---|---|
 | organizations | 組織（企業・スクール） |
 | users | ユーザー（admin / instructor / student） |
-| courses | コース |
-| cohorts | 期・クラス |
-| enrollments | 受講登録（users ↔ cohorts の中間） |
+| curricula | カリキュラム（組織に紐づく研修プログラム） |
+| enrollments | 受講登録（users ↔ curricula の中間） |
 | daily_reports | 日報 |
 | daily_report_comments | 講師コメント |
 | tests | 小テスト |
@@ -55,34 +54,14 @@
 
 ---
 
-## courses
+## curricula
 
 | カラム名 | 型 | 制約 | 備考 |
 |---|---|---|---|
 | id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | |
 | organization_id | BIGINT UNSIGNED | FK, NOT NULL | organizations.id |
-| name | VARCHAR(255) | NOT NULL | コース名 |
-| description | TEXT | NULL | |
-| deleted_at | TIMESTAMP | NULL | soft delete |
-| created_at | TIMESTAMP | NOT NULL | |
-| updated_at | TIMESTAMP | NOT NULL | |
-
-**インデックス:**
-- `organization_id`
-
-**リレーション:**
-- `organization_id` → `organizations.id`
-
----
-
-## cohorts
-
-| カラム名 | 型 | 制約 | 備考 |
-|---|---|---|---|
-| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | |
-| course_id | BIGINT UNSIGNED | FK, NOT NULL | courses.id |
 | instructor_id | BIGINT UNSIGNED | FK, NOT NULL | users.id（講師） |
-| name | VARCHAR(255) | NOT NULL | 例: 2024年4月期 |
+| name | VARCHAR(255) | NOT NULL | カリキュラム名（例: IT研修、ロジック研修【Java】） |
 | starts_on | DATE | NOT NULL | 開始日 |
 | ends_on | DATE | NOT NULL | 終了日 |
 | deleted_at | TIMESTAMP | NULL | soft delete |
@@ -90,11 +69,11 @@
 | updated_at | TIMESTAMP | NOT NULL | |
 
 **インデックス:**
-- `course_id`
+- `organization_id`
 - `instructor_id`
 
 **リレーション:**
-- `course_id` → `courses.id`
+- `organization_id` → `organizations.id`
 - `instructor_id` → `users.id`
 
 ---
@@ -104,18 +83,18 @@
 | カラム名 | 型 | 制約 | 備考 |
 |---|---|---|---|
 | id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | |
-| cohort_id | BIGINT UNSIGNED | FK, NOT NULL | cohorts.id |
+| curriculum_id | BIGINT UNSIGNED | FK, NOT NULL | curricula.id |
 | user_id | BIGINT UNSIGNED | FK, NOT NULL | users.id（student） |
 | enrolled_at | DATE | NOT NULL | 登録日 |
 | created_at | TIMESTAMP | NOT NULL | |
 | updated_at | TIMESTAMP | NOT NULL | |
 
 **インデックス:**
-- `cohort_id, user_id` (UNIQUE)
+- `curriculum_id, user_id` (UNIQUE)
 - `user_id`
 
 **リレーション:**
-- `cohort_id` → `cohorts.id`
+- `curriculum_id` → `curricula.id`
 - `user_id` → `users.id`
 
 ---
@@ -126,7 +105,7 @@
 |---|---|---|---|
 | id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | |
 | user_id | BIGINT UNSIGNED | FK, NOT NULL | users.id（student） |
-| cohort_id | BIGINT UNSIGNED | FK, NOT NULL | cohorts.id |
+| curriculum_id | BIGINT UNSIGNED | FK, NOT NULL | curricula.id |
 | reported_on | DATE | NOT NULL | 対象日 |
 | understanding_level | TINYINT UNSIGNED | NOT NULL | 1〜5（理解度） |
 | content | TEXT | NOT NULL | 学習内容 |
@@ -135,12 +114,12 @@
 | updated_at | TIMESTAMP | NOT NULL | |
 
 **インデックス:**
-- `user_id, cohort_id, reported_on` (UNIQUE)
-- `cohort_id, reported_on`
+- `user_id, curriculum_id, reported_on` (UNIQUE)
+- `curriculum_id, reported_on`
 
 **リレーション:**
 - `user_id` → `users.id`
-- `cohort_id` → `cohorts.id`
+- `curriculum_id` → `curricula.id`
 
 ---
 
@@ -169,7 +148,7 @@
 | カラム名 | 型 | 制約 | 備考 |
 |---|---|---|---|
 | id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | |
-| cohort_id | BIGINT UNSIGNED | FK, NOT NULL | cohorts.id |
+| curriculum_id | BIGINT UNSIGNED | FK, NOT NULL | curricula.id |
 | created_by | BIGINT UNSIGNED | FK, NOT NULL | users.id（作成者） |
 | title | VARCHAR(255) | NOT NULL | |
 | description | TEXT | NULL | |
@@ -180,11 +159,11 @@
 | updated_at | TIMESTAMP | NOT NULL | |
 
 **インデックス:**
-- `cohort_id`
-- `cohort_id, opens_at, closes_at`
+- `curriculum_id`
+- `curriculum_id, opens_at, closes_at`
 
 **リレーション:**
-- `cohort_id` → `cohorts.id`
+- `curriculum_id` → `curricula.id`
 - `created_by` → `users.id`
 
 ---
@@ -282,7 +261,7 @@
 |---|---|---|---|
 | id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | |
 | user_id | BIGINT UNSIGNED | FK, NOT NULL | users.id（student） |
-| cohort_id | BIGINT UNSIGNED | FK, NOT NULL | cohorts.id |
+| curriculum_id | BIGINT UNSIGNED | FK, NOT NULL | curricula.id |
 | reason | ENUM('low_understanding','report_missing','low_score') | NOT NULL | 検知理由 |
 | detail | TEXT | NULL | 補足情報 |
 | resolved_at | DATETIME | NULL | 解消日時。NULL=未解消 |
@@ -290,12 +269,12 @@
 | updated_at | TIMESTAMP | NOT NULL | |
 
 **インデックス:**
-- `user_id, cohort_id`
-- `cohort_id, resolved_at`
+- `user_id, curriculum_id`
+- `curriculum_id, resolved_at`
 
 **リレーション:**
 - `user_id` → `users.id`
-- `cohort_id` → `cohorts.id`
+- `curriculum_id` → `curricula.id`
 
 ---
 
@@ -304,12 +283,12 @@
 ```
 organizations
   └── users (organization_id)
-  └── courses (organization_id)
-        └── cohorts (course_id)
-              ├── enrollments (cohort_id) ← users
-              ├── daily_reports (cohort_id) ← users
+  └── curricula (organization_id)
+        └── curricula (curriculum_id)
+              ├── enrollments (curriculum_id) ← users
+              ├── daily_reports (curriculum_id) ← users
               │     └── daily_report_comments ← users
-              ├── tests (cohort_id)
+              ├── tests (curriculum_id)
               │     ├── questions
               │     │     └── choices
               │     └── submissions ← users
@@ -322,7 +301,7 @@ organizations
 ## 設計上の判断メモ
 
 - `students` テーブルは作らない。`users.role = 'student'` で判別する
-- soft delete は `users`, `courses`, `cohorts` のみに限定。受験・採点データは物理削除しない
+- soft delete は `users`, `curricula`, `curricula` のみに限定。受験・採点データは物理削除しない
 - `submissions` は 1ユーザー × 1テスト で UNIQUE 制約。再受験は初版では不要
 - `risk_alerts.reason` は Enum で管理し、マジックストリングを排除する
 - `understanding_level` は 1〜5 の整数で持ち、アプリ層でラベルを付ける

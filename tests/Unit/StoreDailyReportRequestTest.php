@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Http\Requests\StoreDailyReportRequest;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
@@ -15,11 +15,11 @@ class StoreDailyReportRequestTest extends TestCase
     /** 理解度レベル 1〜5 は通る */
     public function test_理解度が1から5の範囲内ならOK(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         foreach ([1, 3, 5] as $level) {
             $validator = $this->makeValidator([
-                'cohort_id' => $cohort->id,
+                'curriculum_id' => $curriculum->id,
                 'reported_on' => '2026-04-22',
                 'understanding_level' => $level,
                 'content' => '本日の学習内容',
@@ -36,11 +36,11 @@ class StoreDailyReportRequestTest extends TestCase
     /** 理解度 0 や 6 はエラー */
     public function test_理解度が範囲外だとエラー(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         foreach ([0, 6, -1] as $level) {
             $validator = $this->makeValidator([
-                'cohort_id' => $cohort->id,
+                'curriculum_id' => $curriculum->id,
                 'reported_on' => '2026-04-22',
                 'understanding_level' => $level,
                 'content' => '本日の学習内容',
@@ -57,10 +57,10 @@ class StoreDailyReportRequestTest extends TestCase
     /** content が空だとエラー */
     public function test_contentが空だとエラー(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $validator = $this->makeValidator([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'reported_on' => '2026-04-22',
             'understanding_level' => 3,
             'content' => '',
@@ -73,10 +73,10 @@ class StoreDailyReportRequestTest extends TestCase
     /** reported_on が日付形式でないとエラー */
     public function test_reported_onが日付でないとエラー(): void
     {
-        $cohort = Cohort::factory()->create();
+        $curriculum = Curriculum::factory()->create();
 
         $validator = $this->makeValidator([
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'reported_on' => 'not-a-date',
             'understanding_level' => 3,
             'content' => '内容',

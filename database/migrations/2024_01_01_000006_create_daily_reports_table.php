@@ -11,15 +11,15 @@ return new class extends Migration
         Schema::create('daily_reports', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('cohort_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('curriculum_id')->constrained('curricula')->cascadeOnDelete();
             $table->date('reported_on');
             $table->tinyInteger('understanding_level')->unsigned();
             $table->text('content');
             $table->text('impression')->nullable();
             $table->timestamps();
 
-            $table->unique(['user_id', 'cohort_id', 'reported_on']);
-            $table->index(['cohort_id', 'reported_on']);
+            $table->unique(['user_id', 'curriculum_id', 'reported_on']);
+            $table->index(['curriculum_id', 'reported_on']);
         });
     }
 

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\DailyReport;
 use App\Models\RiskAlert;
 use App\Models\User;
@@ -19,7 +19,7 @@ class StudentController extends Controller
 
         $user = $request->user();
 
-        $query = User::with(['latestEnrollment.cohort'])
+        $query = User::with(['latestEnrollment.curriculum'])
             ->where('role', UserRole::Student->value)
             ->addSelect(['*',
                 'latest_understanding_level' => DailyReport::select('understanding_level')
@@ -33,12 +33,12 @@ class StudentController extends Controller
             ]);
 
         if ($user->isInstructor()) {
-            $cohortIds = $user->instructedCohorts()->pluck('id');
-            $query->whereHas('enrollments', fn ($q) => $q->whereIn('cohort_id', $cohortIds));
+            $curriculumIds = $user->instructedCurricula()->pluck('id');
+            $query->whereHas('enrollments', fn ($q) => $q->whereIn('curriculum_id', $curriculumIds));
         }
 
-        if ($request->filled('cohort_id')) {
-            $query->whereHas('enrollments', fn ($q) => $q->where('cohort_id', $request->input('cohort_id')));
+        if ($request->filled('curriculum_id')) {
+            $query->whereHas('enrollments', fn ($q) => $q->where('curriculum_id', $request->input('curriculum_id')));
         }
 
         if ($request->filled('search')) {
@@ -49,15 +49,15 @@ class StudentController extends Controller
 
         $students = $query->orderBy('name')->paginate(30)->withQueryString();
 
-        $cohortsQuery = Cohort::orderBy('name');
+        $curriculaQuery = Curriculum::orderBy('name');
         if ($user->isInstructor()) {
-            $cohortsQuery->whereIn('id', $user->instructedCohorts()->pluck('id'));
+            $curriculaQuery->whereIn('id', $user->instructedCurricula()->pluck('id'));
         }
 
         return Inertia::render('Students/Index', [
             'students' => $students,
-            'cohorts' => $cohortsQuery->get(),
-            'filters' => $request->only(['cohort_id', 'search']),
+            'curricula' => $curriculaQuery->get(),
+            'filters' => $request->only(['curriculum_id', 'search']),
         ]);
     }
 
@@ -66,13 +66,12 @@ class StudentController extends Controller
         $this->authorize('view', $user);
 
         $user->load([
-            'enrollments.cohort.course',
+            'enrollments.curriculum',
             'dailyReports' => fn ($q) => $q->with('comments')->orderByDesc('reported_on')->limit(30),
             'submissions' => fn ($q) => $q->with('test')->whereNotNull('submitted_at')->orderByDesc('submitted_at'),
             'riskAlerts' => fn ($q) => $q->orderByDesc('created_at'),
         ]);
 
-        // 理解度推移: 直近30件を日付昇順で返す
         $understandingTrend = $user->dailyReports
             ->sortBy('reported_on')
             ->values()
@@ -81,7 +80,6 @@ class StudentController extends Controller
                 'level' => $r->understanding_level,
             ]);
 
-        // テスト結果サマリー
         $scores = $user->submissions
             ->whereNotNull('score')
             ->pluck('score');

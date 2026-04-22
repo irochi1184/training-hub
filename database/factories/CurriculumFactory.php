@@ -2,26 +2,27 @@
 
 namespace Database\Factories;
 
-use App\Enums\UserRole;
-use App\Models\Cohort;
-use App\Models\Course;
+use App\Models\Curriculum;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Cohort>
+ * @extends Factory<Curriculum>
  */
-class CohortFactory extends Factory
+class CurriculumFactory extends Factory
 {
+    protected $model = Curriculum::class;
+
     public function definition(): array
     {
         $startsOn = fake()->dateTimeBetween('-1 year', 'now');
         $endsOn = fake()->dateTimeBetween($startsOn, '+1 year');
 
         return [
-            'course_id' => Course::factory(),
+            'organization_id' => Organization::factory(),
             'instructor_id' => User::factory()->instructor(),
-            'name' => fake()->year() . '年' . fake()->month() . '月期',
+            'name' => fake()->randomElement(['IT研修', 'ロジック研修【Java】', 'Webアプリ開発', 'データ分析入門']),
             'starts_on' => $startsOn->format('Y-m-d'),
             'ends_on' => $endsOn->format('Y-m-d'),
         ];

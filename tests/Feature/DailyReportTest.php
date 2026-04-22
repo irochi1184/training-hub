@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Cohort;
+use App\Models\Curriculum;
 use App\Models\DailyReport;
 use App\Models\Enrollment;
 use App\Models\User;
@@ -18,8 +18,8 @@ class DailyReportTest extends TestCase
     public function test_studentが日報入力画面を表示できる(): void
     {
         $student = User::factory()->student()->create();
-        $cohort = Cohort::factory()->create();
-        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($student)->get('/daily-reports/create');
 
@@ -31,11 +31,11 @@ class DailyReportTest extends TestCase
     public function test_studentが日報を提出できる(): void
     {
         $student = User::factory()->student()->create();
-        $cohort = Cohort::factory()->create();
-        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($student)->post('/daily-reports', [
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'reported_on' => today()->toDateString(),
             'understanding_level' => 3,
             'content' => '今日学んだ内容です。',
@@ -45,7 +45,7 @@ class DailyReportTest extends TestCase
         $response->assertRedirect();
         $this->assertDatabaseHas('daily_reports', [
             'user_id' => $student->id,
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'understanding_level' => 3,
         ]);
     }
@@ -73,26 +73,26 @@ class DailyReportTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page->component('DailyReports/Show'));
     }
 
-    /** 同日・同コホートの日報を再提出すると既存レコードが更新される */
+    /** 同日・同カリキュラムの日報を再提出すると既存レコードが更新される */
     public function test_同日の日報を再提出すると更新される(): void
     {
         $student = User::factory()->student()->create();
-        $cohort = Cohort::factory()->create();
-        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
         $date = today()->toDateString();
 
         // 1回目の提出
         $this->actingAs($student)->post('/daily-reports', [
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'reported_on' => $date,
             'understanding_level' => 3,
             'content' => '最初の内容です。',
         ]);
 
-        // 2回目（同日・同コホート）の提出
+        // 2回目（同日・同カリキュラム）の提出
         $response = $this->actingAs($student)->post('/daily-reports', [
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'reported_on' => $date,
             'understanding_level' => 5,
             'content' => '更新後の内容です。',
@@ -105,7 +105,7 @@ class DailyReportTest extends TestCase
         $this->assertDatabaseCount('daily_reports', 1);
         $this->assertDatabaseHas('daily_reports', [
             'user_id' => $student->id,
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'understanding_level' => 5,
             'content' => '更新後の内容です。',
         ]);
@@ -115,11 +115,11 @@ class DailyReportTest extends TestCase
     public function test_理解度が0だとバリデーションエラーになる(): void
     {
         $student = User::factory()->student()->create();
-        $cohort = Cohort::factory()->create();
-        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($student)->post('/daily-reports', [
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'reported_on' => today()->toDateString(),
             'understanding_level' => 0,
             'content' => '内容',
@@ -132,11 +132,11 @@ class DailyReportTest extends TestCase
     public function test_理解度が6だとバリデーションエラーになる(): void
     {
         $student = User::factory()->student()->create();
-        $cohort = Cohort::factory()->create();
-        Enrollment::factory()->create(['user_id' => $student->id, 'cohort_id' => $cohort->id]);
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($student)->post('/daily-reports', [
-            'cohort_id' => $cohort->id,
+            'curriculum_id' => $curriculum->id,
             'reported_on' => today()->toDateString(),
             'understanding_level' => 6,
             'content' => '内容',

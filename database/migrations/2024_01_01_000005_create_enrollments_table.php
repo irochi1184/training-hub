@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('enrollments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cohort_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('curriculum_id')->constrained('curricula')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->date('enrolled_at');
             $table->timestamps();
 
-            $table->unique(['cohort_id', 'user_id']);
+            $table->unique(['curriculum_id', 'user_id']);
             $table->index('user_id');
         });
     }
