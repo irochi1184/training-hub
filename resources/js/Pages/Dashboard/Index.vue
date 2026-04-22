@@ -1,11 +1,11 @@
 <template>
   <AppLayout>
-    <div class="max-w-5xl">
+    <div class="max-w-6xl">
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight mb-6">ダッシュボード</h1>
 
       <!-- admin向け表示 -->
       <template v-if="user.role === 'admin'">
-        <div class="grid grid-cols-3 gap-5 mb-8">
+        <div class="grid grid-cols-3 gap-5 mb-6">
           <StatCard
             label="要注意者（未解消）"
             :value="adminStats.risk_alert_count"
@@ -25,23 +25,17 @@
           />
         </div>
 
-        <!-- 要注意者アラート -->
-        <div v-if="adminStats.risk_alert_count > 0" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <div class="flex items-center gap-2 mb-1">
-            <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-            </svg>
-            <span class="text-sm font-semibold text-red-800">要注意者が {{ adminStats.risk_alert_count }} 名います</span>
+        <div class="grid grid-cols-3 gap-5 mb-6">
+          <div class="col-span-2">
+            <CurriculumSummaryTable :summaries="curriculumSummaries" />
           </div>
-          <Link href="/risk-alerts" class="text-sm text-red-700 underline hover:no-underline">
-            要注意者一覧を確認する
-          </Link>
+          <RecentRiskAlertsCard :alerts="recentRiskAlerts" />
         </div>
       </template>
 
       <!-- instructor向け表示 -->
       <template v-else-if="user.role === 'instructor'">
-        <div class="grid grid-cols-3 gap-5 mb-8">
+        <div class="grid grid-cols-3 gap-5 mb-6">
           <StatCard
             label="担当カリキュラム要注意者"
             :value="instructorStats.risk_alert_count"
@@ -61,17 +55,11 @@
           />
         </div>
 
-        <!-- 要注意者アラート -->
-        <div v-if="instructorStats.risk_alert_count > 0" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <div class="flex items-center gap-2 mb-1">
-            <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-            </svg>
-            <span class="text-sm font-semibold text-red-800">要注意者が {{ instructorStats.risk_alert_count }} 名います</span>
+        <div class="grid grid-cols-3 gap-5 mb-6">
+          <div class="col-span-2">
+            <CurriculumSummaryTable :summaries="curriculumSummaries" />
           </div>
-          <Link href="/risk-alerts" class="text-sm text-red-700 underline hover:no-underline">
-            要注意者一覧を確認する
-          </Link>
+          <RecentRiskAlertsCard :alerts="recentRiskAlerts" />
         </div>
       </template>
 
@@ -92,7 +80,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-5">
+        <div class="grid grid-cols-2 gap-5 mb-6">
           <!-- 直近日報 -->
           <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
             <h2 class="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-4">直近の日報</h2>
@@ -145,6 +133,8 @@
             <p v-else class="text-sm text-slate-400">まだ受験記録がありません</p>
           </div>
         </div>
+
+        <UnderstandingTrendChart :trend="understandingTrend" />
       </template>
     </div>
   </AppLayout>
@@ -153,10 +143,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import type { PageProps, DailyReport, Submission } from '@/types';
+import type {
+  PageProps,
+  DailyReport,
+  Submission,
+  DashboardRiskAlert,
+  CurriculumSummary,
+  UnderstandingTrendItem,
+} from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
 import StatCard from '@/Components/StatCard.vue';
+import RecentRiskAlertsCard from '@/Components/RecentRiskAlertsCard.vue';
+import CurriculumSummaryTable from '@/Components/CurriculumSummaryTable.vue';
+import UnderstandingTrendChart from '@/Components/UnderstandingTrendChart.vue';
 import { formatDate } from '@/utils/formatDate';
 
 interface AdminStats {
@@ -181,12 +181,14 @@ const props = defineProps<{
   adminStats?: AdminStats;
   instructorStats?: InstructorStats;
   studentStats?: StudentStats;
+  recentRiskAlerts?: DashboardRiskAlert[];
+  curriculumSummaries?: CurriculumSummary[];
+  understandingTrend?: UnderstandingTrendItem[];
 }>();
 
 const page = usePage<PageProps>();
 const user = computed(() => page.props.auth.user);
 
-// デフォルト値（バックエンドからデータが来ない場合でも壊れないように）
 const adminStats = computed<AdminStats>(() => props.adminStats ?? {
   risk_alert_count: 0,
   today_report_rate: 0,
@@ -204,4 +206,8 @@ const studentStats = computed<StudentStats>(() => props.studentStats ?? {
   latest_report: null,
   latest_submission: null,
 });
+
+const recentRiskAlerts = computed<DashboardRiskAlert[]>(() => props.recentRiskAlerts ?? []);
+const curriculumSummaries = computed<CurriculumSummary[]>(() => props.curriculumSummaries ?? []);
+const understandingTrend = computed<UnderstandingTrendItem[]>(() => props.understandingTrend ?? []);
 </script>
