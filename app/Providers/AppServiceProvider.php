@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\Curriculum;
 use App\Models\DailyReport;
 use App\Models\DailyReportComment;
 use App\Models\RiskAlert;
 use App\Models\Submission;
 use App\Models\Test;
 use App\Models\User;
+use App\Policies\CurriculumPolicy;
 use App\Policies\DailyReportCommentPolicy;
 use App\Policies\DailyReportPolicy;
 use App\Policies\ExportPolicy;
@@ -25,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Curriculum::class, CurriculumPolicy::class);
         Gate::policy(DailyReport::class, DailyReportPolicy::class);
         Gate::policy(DailyReportComment::class, DailyReportCommentPolicy::class);
         Gate::policy(Test::class, TestPolicy::class);

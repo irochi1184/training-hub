@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\DailyReportCommentController;
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DashboardController;
@@ -82,5 +83,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/exports', [ExportController::class, 'index'])->name('exports.index');
         Route::get('/exports/daily-reports', [ExportController::class, 'dailyReports'])->name('exports.daily-reports');
         Route::get('/exports/test-results', [ExportController::class, 'testResults'])->name('exports.test-results');
+    });
+
+    // カリキュラム管理（admin のみ）
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/curricula', [CurriculumController::class, 'index'])->name('curricula.index');
+        Route::get('/curricula/create', [CurriculumController::class, 'create'])->name('curricula.create');
+        Route::post('/curricula', [CurriculumController::class, 'store'])->name('curricula.store');
+        Route::get('/curricula/{curriculum}/edit', [CurriculumController::class, 'edit'])->name('curricula.edit');
+        Route::put('/curricula/{curriculum}', [CurriculumController::class, 'update'])->name('curricula.update');
+        Route::delete('/curricula/{curriculum}', [CurriculumController::class, 'destroy'])->name('curricula.destroy');
     });
 });
