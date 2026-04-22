@@ -2,6 +2,30 @@ import { test, expect } from '@playwright/test';
 import { accounts, login } from './helpers';
 
 test.describe('要注意者アラートフロー', () => {
+    test('admin が理由フィルターで絞り込める', async ({ page }) => {
+        await login(page, accounts.admin.email, accounts.admin.password);
+        await page.goto('/risk-alerts');
+        await expect(page.getByRole('heading', { name: '要注意者一覧' })).toBeVisible();
+
+        // 「理解度低下」で絞り込む
+        await page.locator('select').first().selectOption('low_understanding');
+        await page.waitForLoadState('networkidle');
+
+        // URL に reason=low_understanding が含まれる
+        await expect(page).toHaveURL(/reason=low_understanding/);
+    });
+
+    test('admin が解消済アラートも全件で閲覧できる', async ({ page }) => {
+        await login(page, accounts.admin.email, accounts.admin.password);
+        await page.goto('/risk-alerts');
+
+        await page.getByRole('button', { name: '全件' }).click();
+        await page.waitForLoadState('networkidle');
+
+        // URL に show_resolved=1
+        await expect(page).toHaveURL(/show_resolved=1/);
+    });
+
     test('instructor がログインして要注意者一覧を表示できる', async ({ page }) => {
         // ログインする
         await login(page, accounts.instructor.email, accounts.instructor.password);

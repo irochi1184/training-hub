@@ -73,7 +73,7 @@
                   </Link>
                   <span
                     v-else
-                    class="text-sm text-gray-400 cursor-not-allowed"
+                    class="text-sm text-slate-400 cursor-not-allowed"
                     title="受験者がいるため編集できません"
                   >
                     編集
