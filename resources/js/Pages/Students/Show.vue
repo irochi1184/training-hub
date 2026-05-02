@@ -61,12 +61,18 @@
                 :key="item.date"
                 class="flex flex-col items-center flex-shrink-0"
                 style="min-width: 1.5rem;"
-                :title="`${item.date}：理解度 ${item.level}`"
+                :title="`${item.date}：理解度 ${item.level ?? '未提出'}`"
               >
                 <div
+                  v-if="item.level !== null"
                   class="w-full rounded-t transition-all"
-                  :class="barColorClass(item.level)"
+                  :class="understandingBarClass(item.level)"
                   :style="{ height: barHeightStyle(item.level) }"
+                ></div>
+                <div
+                  v-else
+                  class="w-full rounded-t bg-slate-100 border border-dashed border-slate-300"
+                  style="height: 4px"
                 ></div>
               </div>
             </div>
@@ -302,6 +308,7 @@ import DataTable from '@/Components/DataTable.vue';
 import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
 import ReasonBadge from '@/Components/ReasonBadge.vue';
 import { formatDate, formatDateTime } from '@/utils/formatDate';
+import { understandingBarClass } from '@/utils/understandingLevel';
 
 const props = defineProps<{
   student: User;
@@ -338,15 +345,9 @@ function barHeightStyle(level: number): string {
   return `${Math.round(ratio * CHART_MAX_HEIGHT_PX)}px`;
 }
 
-function barColorClass(level: number): string {
-  if (level <= 2) return 'bg-red-400';
-  if (level === 3) return 'bg-yellow-400';
-  return 'bg-green-400';
-}
-
 const latestUnderstandingLevel = computed(() => {
   if (props.understandingTrend.length === 0) return 0;
-  return props.understandingTrend[props.understandingTrend.length - 1].level;
+  return props.understandingTrend[props.understandingTrend.length - 1].level ?? 0;
 });
 
 // 最低点が60点未満なら警告表示

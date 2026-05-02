@@ -65,6 +65,7 @@ export interface Test {
   opens_at: string | null;
   closes_at: string | null;
   curriculum?: Curriculum;
+  creator?: User;
   questions?: Question[];
   questions_count?: number;
   submissions_count?: number;

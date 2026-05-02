@@ -74,21 +74,7 @@ class TestController extends Controller
             'closes_at' => $validated['closes_at'] ?? null,
         ]);
 
-        foreach ($validated['questions'] as $position => $questionData) {
-            $question = $test->questions()->create([
-                'body' => $questionData['body'],
-                'position' => $position + 1,
-                'score' => $questionData['score'],
-            ]);
-
-            foreach ($questionData['choices'] as $choicePosition => $choiceData) {
-                $question->choices()->create([
-                    'body' => $choiceData['body'],
-                    'is_correct' => $choiceData['is_correct'],
-                    'position' => $choicePosition + 1,
-                ]);
-            }
-        }
+        $this->syncQuestions($test, $validated['questions']);
 
         return redirect()->route('tests.index')->with('success', 'テストを作成しました');
     }
@@ -123,8 +109,14 @@ class TestController extends Controller
         ]);
 
         $test->questions()->delete();
+        $this->syncQuestions($test, $validated['questions']);
 
-        foreach ($validated['questions'] as $position => $questionData) {
+        return redirect()->route('tests.index')->with('success', 'テストを更新しました');
+    }
+
+    private function syncQuestions(Test $test, array $questions): void
+    {
+        foreach ($questions as $position => $questionData) {
             $question = $test->questions()->create([
                 'body' => $questionData['body'],
                 'position' => $position + 1,
@@ -139,8 +131,6 @@ class TestController extends Controller
                 ]);
             }
         }
-
-        return redirect()->route('tests.index')->with('success', 'テストを更新しました');
     }
 
     public function destroy(Test $test): RedirectResponse

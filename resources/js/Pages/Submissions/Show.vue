@@ -15,7 +15,7 @@
         <p class="text-sm text-slate-500 mb-6">
           受験者: {{ submission.user?.name ?? '—' }}
           <span class="mx-2 text-slate-300">|</span>
-          提出日時: {{ submission.submitted_at ? formatDate(submission.submitted_at) : '未提出' }}
+          提出日時: {{ submission.submitted_at ? formatDateTime(submission.submitted_at) : '未提出' }}
         </p>
 
         <!-- スコア表示 -->
@@ -109,6 +109,7 @@ import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import type { Submission, Answer, Choice } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { formatDateTime } from '@/utils/formatDate';
 
 const props = defineProps<{
   submission: Submission;
@@ -162,13 +163,4 @@ function choiceClass(choice: Choice, answer: Answer): string {
   return 'text-slate-600';
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 </script>

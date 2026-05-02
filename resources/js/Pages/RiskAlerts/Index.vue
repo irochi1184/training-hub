@@ -154,6 +154,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
 import Pagination from '@/Components/Pagination.vue';
 import ReasonBadge from '@/Components/ReasonBadge.vue';
+import { formatDate } from '@/utils/formatDate';
 
 type CurriculumOption = { id: number; name: string };
 
@@ -207,11 +208,4 @@ function resolve(alertId: number): void {
   router.patch(`/risk-alerts/${alertId}/resolve`, {}, { preserveScroll: true });
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-}
 </script>

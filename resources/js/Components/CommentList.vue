@@ -16,7 +16,7 @@
       <div class="flex-1 min-w-0">
         <div class="flex items-baseline gap-2 mb-1">
           <span class="text-sm font-medium text-slate-800">{{ comment.user?.name ?? '不明' }}</span>
-          <span class="text-xs text-slate-400">{{ formatDate(comment.created_at) }}</span>
+          <span class="text-xs text-slate-400">{{ formatDateTime(comment.created_at) }}</span>
         </div>
         <p class="text-sm text-slate-700 whitespace-pre-wrap break-words">{{ comment.body }}</p>
         <button
@@ -46,6 +46,7 @@ import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import type { DailyReportComment } from '@/types';
 import ConfirmDialog from '@/Components/ConfirmDialog.vue';
+import { formatDateTime } from '@/utils/formatDate';
 
 const props = defineProps<{
   comments: DailyReportComment[];
@@ -56,16 +57,6 @@ const props = defineProps<{
 
 const showDeleteDialog = ref(false);
 const targetCommentId = ref<number | null>(null);
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 function requestDelete(commentId: number): void {
   targetCommentId.value = commentId;
