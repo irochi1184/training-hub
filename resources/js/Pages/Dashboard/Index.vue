@@ -31,6 +31,15 @@
           </div>
           <RecentRiskAlertsCard :alerts="recentRiskAlerts" />
         </div>
+
+        <!-- グラフセクション -->
+        <div class="grid grid-cols-1 gap-5 mb-6 lg:grid-cols-2">
+          <ReportRateTrendChart :data="reportRateTrend" />
+          <UnderstandingDistributionChart :data="understandingDistribution" />
+        </div>
+        <div class="mb-6">
+          <CurriculumScoreChart :data="curriculumScoreComparison" />
+        </div>
       </template>
 
       <!-- instructor向け表示 -->
@@ -60,6 +69,15 @@
             <CurriculumSummaryTable :summaries="curriculumSummaries" />
           </div>
           <RecentRiskAlertsCard :alerts="recentRiskAlerts" />
+        </div>
+
+        <!-- グラフセクション -->
+        <div class="grid grid-cols-1 gap-5 mb-6 lg:grid-cols-2">
+          <ReportRateTrendChart :data="reportRateTrend" />
+          <UnderstandingDistributionChart :data="understandingDistribution" />
+        </div>
+        <div class="mb-6">
+          <CurriculumScoreChart :data="curriculumScoreComparison" />
         </div>
       </template>
 
@@ -150,6 +168,9 @@ import type {
   DashboardRiskAlert,
   CurriculumSummary,
   UnderstandingTrendItem,
+  UnderstandingDistribution,
+  ReportRateItem,
+  CurriculumScoreItem,
 } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
@@ -157,6 +178,9 @@ import StatCard from '@/Components/StatCard.vue';
 import RecentRiskAlertsCard from '@/Components/RecentRiskAlertsCard.vue';
 import CurriculumSummaryTable from '@/Components/CurriculumSummaryTable.vue';
 import UnderstandingTrendChart from '@/Components/UnderstandingTrendChart.vue';
+import UnderstandingDistributionChart from '@/Components/UnderstandingDistributionChart.vue';
+import ReportRateTrendChart from '@/Components/ReportRateTrendChart.vue';
+import CurriculumScoreChart from '@/Components/CurriculumScoreChart.vue';
 import { formatDate } from '@/utils/formatDate';
 
 interface AdminStats {
@@ -184,6 +208,9 @@ const props = defineProps<{
   recentRiskAlerts?: DashboardRiskAlert[];
   curriculumSummaries?: CurriculumSummary[];
   understandingTrend?: UnderstandingTrendItem[];
+  understandingDistribution?: UnderstandingDistribution[];
+  reportRateTrend?: ReportRateItem[];
+  curriculumScoreComparison?: CurriculumScoreItem[];
 }>();
 
 const page = usePage<PageProps>();
@@ -210,4 +237,7 @@ const studentStats = computed<StudentStats>(() => props.studentStats ?? {
 const recentRiskAlerts = computed<DashboardRiskAlert[]>(() => props.recentRiskAlerts ?? []);
 const curriculumSummaries = computed<CurriculumSummary[]>(() => props.curriculumSummaries ?? []);
 const understandingTrend = computed<UnderstandingTrendItem[]>(() => props.understandingTrend ?? []);
+const understandingDistribution = computed<UnderstandingDistribution[]>(() => props.understandingDistribution ?? []);
+const reportRateTrend = computed<ReportRateItem[]>(() => props.reportRateTrend ?? []);
+const curriculumScoreComparison = computed<CurriculumScoreItem[]>(() => props.curriculumScoreComparison ?? []);
 </script>

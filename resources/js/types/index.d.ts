@@ -127,6 +127,21 @@ export interface UnderstandingTrendItem {
   level: number | null; // 1〜5、未提出日は null
 }
 
+export interface UnderstandingDistribution {
+  curriculum_name: string;
+  levels: [number, number, number, number, number]; // レベル1〜5の件数
+}
+
+export interface ReportRateItem {
+  date: string;
+  rate: number;
+}
+
+export interface CurriculumScoreItem {
+  curriculum_name: string;
+  avg_score: number | null;
+}
+
 export interface DashboardRiskAlert {
   id: number;
   reason: 'low_understanding' | 'report_missing' | 'low_score';
