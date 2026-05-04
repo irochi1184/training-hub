@@ -289,7 +289,7 @@ class TestManagementTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Tests/Analytics')
             ->where('summary.total_submissions', 2)
-            ->where('summary.avg_score', 5.0)
+            ->where('summary.avg_score', 5)
             ->where('summary.max_score', 10)
             ->where('summary.min_score', 0)
             ->where('summary.total_points', 10)
