@@ -16,7 +16,7 @@
           <div
             v-if="item.level !== null"
             class="w-full rounded-t transition-colors"
-            :class="barClass(item.level)"
+            :class="understandingBarClass(item.level)"
             :style="{ height: barHeight(item.level) }"
             :title="`${formatDay(item.date)}: ${item.level}`"
           />
@@ -43,6 +43,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { UnderstandingTrendItem } from '@/types';
+import { understandingBarClass } from '@/utils/understandingLevel';
 
 const props = defineProps<{
   trend: UnderstandingTrendItem[];
@@ -54,12 +55,6 @@ const hasAnyReport = computed(() => props.trend.some((item) => item.level !== nu
 
 function barHeight(level: number): string {
   return `${(level / MAX_LEVEL) * 100}%`;
-}
-
-function barClass(level: number): string {
-  if (level <= 2) return 'bg-red-400';
-  if (level === 3) return 'bg-yellow-400';
-  return 'bg-emerald-500';
 }
 
 function formatDay(date: string): string {

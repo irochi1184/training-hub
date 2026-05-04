@@ -84,6 +84,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
 import Pagination from '@/Components/Pagination.vue';
 import ConfirmDialog from '@/Components/ConfirmDialog.vue';
+import { formatDate } from '@/utils/formatDate';
 
 interface CurriculumRow extends Curriculum {
   enrollments_count?: number;
@@ -107,11 +108,4 @@ function doDelete(): void {
   router.delete(`/curricula/${deleteTarget.value.id}`);
 }
 
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-}
 </script>

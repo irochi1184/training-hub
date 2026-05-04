@@ -117,4 +117,76 @@ class TestManagementTest extends TestCase
             'title' => '更新後タイトル',
         ]);
     }
+
+    /** student がテストを作成しようとすると 403 */
+    public function test_studentがテストを作成しようとすると403(): void
+    {
+        $student = User::factory()->student()->create();
+        $curriculum = Curriculum::factory()->create();
+
+        $response = $this->actingAs($student)->post('/tests', [
+            'curriculum_id' => $curriculum->id,
+            'title' => '不正作成テスト',
+            'questions' => [
+                [
+                    'body' => '問題文',
+                    'score' => 1,
+                    'choices' => [
+                        ['body' => '選択肢A', 'is_correct' => true],
+                        ['body' => '選択肢B', 'is_correct' => false],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('tests', ['title' => '不正作成テスト']);
+    }
+
+    /** instructor が受験者なしのテストを削除できる */
+    public function test_instructorがテストを削除できる(): void
+    {
+        $instructor = User::factory()->instructor()->create();
+        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
+
+        $response = $this->actingAs($instructor)->delete("/tests/{$test->id}");
+
+        $response->assertRedirect(route('tests.index'));
+        $this->assertDatabaseMissing('tests', ['id' => $test->id]);
+    }
+
+    /** 受験者がいるテストは削除できない */
+    public function test_受験者がいるテストは削除できない(): void
+    {
+        $instructor = User::factory()->instructor()->create();
+        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
+
+        // 受験者を作成する
+        Submission::factory()->create(['test_id' => $test->id]);
+
+        $response = $this->actingAs($instructor)->delete("/tests/{$test->id}");
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('tests', ['id' => $test->id]);
+    }
+
+    /** student が公開期間外のテストの受験画面にアクセスすると 403 */
+    public function test_studentが公開期間外テストの受験画面にアクセスすると403(): void
+    {
+        $student = User::factory()->student()->create();
+        $curriculum = Curriculum::factory()->create();
+
+        // closes_at を過去に設定して期間外にする
+        $test = Test::factory()->create([
+            'curriculum_id' => $curriculum->id,
+            'opens_at' => now()->subDays(10),
+            'closes_at' => now()->subDay(),
+        ]);
+
+        $response = $this->actingAs($student)->get("/tests/{$test->id}/take");
+
+        $response->assertStatus(403);
+    }
 }

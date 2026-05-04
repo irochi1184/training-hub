@@ -118,6 +118,7 @@ import DataTable from '@/Components/DataTable.vue';
 import Pagination from '@/Components/Pagination.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
 import ConfirmDialog from '@/Components/ConfirmDialog.vue';
+import { formatDate } from '@/utils/formatDate';
 
 const props = defineProps<{
   tests: PaginatedData<Test>;
@@ -147,14 +148,6 @@ function testStatusLabel(test: Test): string {
   if (test.closes_at && new Date(test.closes_at) < now) return '終了';
   if (test.opens_at && new Date(test.opens_at) > now) return '公開前';
   return '受験可能';
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
 }
 
 const showDeleteDialog = ref(false);

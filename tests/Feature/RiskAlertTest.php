@@ -110,4 +110,30 @@ class RiskAlertTest extends TestCase
             ->where('curricula.0.id', $mine->id)
         );
     }
+
+    /** 解消済みアラートを再度解消しようとするとエラーメッセージが返る */
+    public function test_解消済みアラートを再度解消するとエラー(): void
+    {
+        $instructor = User::factory()->instructor()->create();
+        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $alert = RiskAlert::factory()->resolved()->create(['curriculum_id' => $curriculum->id]);
+
+        $response = $this->actingAs($instructor)->patch("/risk-alerts/{$alert->id}/resolve");
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors(['error']);
+    }
+
+    /** instructor が担当外カリキュラムのアラートを解消しようとすると 403 */
+    public function test_instructorが担当外カリキュラムのアラートを解消しようとすると403(): void
+    {
+        $instructor = User::factory()->instructor()->create();
+        $otherCurriculum = Curriculum::factory()->create();
+        $alert = RiskAlert::factory()->create(['curriculum_id' => $otherCurriculum->id]);
+
+        $response = $this->actingAs($instructor)->patch("/risk-alerts/{$alert->id}/resolve");
+
+        $response->assertStatus(403);
+        $this->assertNull($alert->fresh()->resolved_at);
+    }
 }
