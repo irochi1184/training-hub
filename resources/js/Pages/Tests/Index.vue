@@ -64,6 +64,14 @@
 
                 <!-- admin/instructor: 編集・削除（受験者がいると編集も削除も不可） -->
                 <template v-if="canCreate">
+                  <!-- 受験者がいる場合のみ分析リンクを表示 -->
+                  <Link
+                    v-if="(test.submissions_count ?? 0) > 0"
+                    :href="`/tests/${test.id}/analytics`"
+                    class="text-sm text-slate-600 hover:text-slate-800"
+                  >
+                    分析
+                  </Link>
                   <Link
                     v-if="(test.submissions_count ?? 0) === 0"
                     :href="`/tests/${test.id}/edit`"
@@ -72,7 +80,7 @@
                     編集
                   </Link>
                   <span
-                    v-else
+                    v-if="(test.submissions_count ?? 0) > 0"
                     class="text-sm text-slate-400 cursor-not-allowed"
                     title="受験者がいるため編集できません"
                   >

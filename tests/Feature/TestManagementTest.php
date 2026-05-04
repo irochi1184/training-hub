@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Answer;
+use App\Models\Choice;
 use App\Models\Curriculum;
+use App\Models\Question;
 use App\Models\Submission;
 use App\Models\Test;
 use App\Models\User;
@@ -188,5 +191,174 @@ class TestManagementTest extends TestCase
         $response = $this->actingAs($student)->get("/tests/{$test->id}/take");
 
         $response->assertStatus(403);
+    }
+
+    // =========================================================================
+    // テスト分析画面 (tests.show)
+    // =========================================================================
+
+    /** admin が分析画面にアクセスできる */
+    public function test_adminがテスト分析画面にアクセスできる(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $curriculum = Curriculum::factory()->create();
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
+
+        $response = $this->actingAs($admin)->get("/tests/{$test->id}/analytics");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Tests/Analytics')
+            ->has('test')
+            ->has('questionAnalytics')
+            ->has('submissions')
+            ->has('summary')
+        );
+    }
+
+    /** 担当 instructor が分析画面にアクセスできる */
+    public function test_担当instructorがテスト分析画面にアクセスできる(): void
+    {
+        $instructor = User::factory()->instructor()->create();
+        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
+
+        $response = $this->actingAs($instructor)->get("/tests/{$test->id}/analytics");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page->component('Tests/Analytics'));
+    }
+
+    /** 別担当の instructor は分析画面にアクセスできない */
+    public function test_別担当instructorがテスト分析画面にアクセスすると403(): void
+    {
+        $otherInstructor = User::factory()->instructor()->create();
+        $curriculum = Curriculum::factory()->create(); // instructor_id が別ユーザー
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
+
+        $response = $this->actingAs($otherInstructor)->get("/tests/{$test->id}/analytics");
+
+        $response->assertStatus(403);
+    }
+
+    /** student は分析画面にアクセスできない（ミドルウェアで弾かれる） */
+    public function test_studentがテスト分析画面にアクセスすると403(): void
+    {
+        $student = User::factory()->student()->create();
+        $curriculum = Curriculum::factory()->create();
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
+
+        $response = $this->actingAs($student)->get("/tests/{$test->id}/analytics");
+
+        $response->assertStatus(403);
+    }
+
+    /** 分析画面のサマリーが正しく集計される */
+    public function test_テスト分析画面のサマリーが正しく集計される(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $curriculum = Curriculum::factory()->create();
+
+        // 問題と選択肢を作成
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
+        $question = Question::factory()->create(['test_id' => $test->id, 'position' => 1, 'score' => 10]);
+        $correctChoice = Choice::factory()->correct()->create(['question_id' => $question->id, 'position' => 1]);
+        $wrongChoice = Choice::factory()->create(['question_id' => $question->id, 'position' => 2]);
+
+        // 受験者1：正答（score 10）
+        $sub1 = Submission::factory()->submitted()->create(['test_id' => $test->id, 'score' => 10]);
+        Answer::factory()->create([
+            'submission_id' => $sub1->id,
+            'question_id' => $question->id,
+            'choice_id' => $correctChoice->id,
+            'is_correct' => true,
+        ]);
+
+        // 受験者2：誤答（score 0）
+        $sub2 = Submission::factory()->submitted()->create(['test_id' => $test->id, 'score' => 0]);
+        Answer::factory()->create([
+            'submission_id' => $sub2->id,
+            'question_id' => $question->id,
+            'choice_id' => $wrongChoice->id,
+            'is_correct' => false,
+        ]);
+
+        $response = $this->actingAs($admin)->get("/tests/{$test->id}/analytics");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Tests/Analytics')
+            ->where('summary.total_submissions', 2)
+            ->where('summary.avg_score', 5.0)
+            ->where('summary.max_score', 10)
+            ->where('summary.min_score', 0)
+            ->where('summary.total_points', 10)
+        );
+    }
+
+    /** 分析画面の問題別集計が正しく計算される */
+    public function test_テスト分析画面の問題別集計が正しく計算される(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $curriculum = Curriculum::factory()->create();
+
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
+        $question = Question::factory()->create(['test_id' => $test->id, 'position' => 1, 'score' => 5]);
+        $correctChoice = Choice::factory()->correct()->create(['question_id' => $question->id, 'position' => 1]);
+        Choice::factory()->create(['question_id' => $question->id, 'position' => 2]);
+
+        // 3人受験、うち2人が正答
+        foreach (range(1, 2) as $_) {
+            $sub = Submission::factory()->submitted()->create(['test_id' => $test->id]);
+            Answer::factory()->create([
+                'submission_id' => $sub->id,
+                'question_id' => $question->id,
+                'choice_id' => $correctChoice->id,
+                'is_correct' => true,
+            ]);
+        }
+        $sub3 = Submission::factory()->submitted()->create(['test_id' => $test->id]);
+        Answer::factory()->create([
+            'submission_id' => $sub3->id,
+            'question_id' => $question->id,
+            'choice_id' => $correctChoice->id,
+            'is_correct' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->get("/tests/{$test->id}/analytics");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Tests/Analytics')
+            ->has('questionAnalytics', 1)
+            ->where('questionAnalytics.0.question_id', $question->id)
+            ->where('questionAnalytics.0.position', 1)
+            ->where('questionAnalytics.0.score', 5)
+            ->where('questionAnalytics.0.total_answers', 3)
+            ->where('questionAnalytics.0.correct_count', 3)
+            ->where('questionAnalytics.0.correct_rate', 100)
+        );
+    }
+
+    /** 未受験のテストでは空の集計が返る */
+    public function test_受験者なしのテストで空の集計が返る(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $curriculum = Curriculum::factory()->create();
+        $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
+        Question::factory()->create(['test_id' => $test->id, 'position' => 1, 'score' => 10]);
+
+        $response = $this->actingAs($admin)->get("/tests/{$test->id}/analytics");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Tests/Analytics')
+            ->where('summary.total_submissions', 0)
+            ->where('summary.avg_score', null)
+            ->where('summary.max_score', null)
+            ->where('summary.min_score', null)
+            ->where('summary.total_points', 10)
+            ->has('submissions', 0)
+        );
     }
 }
