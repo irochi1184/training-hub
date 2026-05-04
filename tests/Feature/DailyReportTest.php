@@ -144,4 +144,37 @@ class DailyReportTest extends TestCase
 
         $response->assertSessionHasErrors(['understanding_level']);
     }
+
+    /** student が日報一覧にアクセスすると 403 */
+    public function test_studentが日報一覧にアクセスすると403(): void
+    {
+        $student = User::factory()->student()->create();
+
+        $response = $this->actingAs($student)->get('/daily-reports');
+
+        $response->assertStatus(403);
+    }
+
+    /** instructor が日報一覧を取得すると担当カリキュラムの日報のみ表示される */
+    public function test_instructorが日報一覧で担当カリキュラムの日報のみ表示される(): void
+    {
+        $instructor = User::factory()->instructor()->create();
+
+        // 担当カリキュラム — この日報は表示される
+        $ownCurriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        DailyReport::factory()->create(['curriculum_id' => $ownCurriculum->id]);
+
+        // 担当外カリキュラム — この日報は表示されない
+        $otherCurriculum = Curriculum::factory()->create();
+        DailyReport::factory()->create(['curriculum_id' => $otherCurriculum->id]);
+
+        $response = $this->actingAs($instructor)->get('/daily-reports');
+
+        $response->assertStatus(200);
+        $response->assertInertia(
+            fn (Assert $page) => $page
+                ->component('DailyReports/Index')
+                ->has('reports.data', 1)
+        );
+    }
 }
