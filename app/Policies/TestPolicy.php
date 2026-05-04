@@ -13,12 +13,23 @@ class TestPolicy
         return true;
     }
 
+    /**
+     * テスト詳細・分析画面の閲覧権限。
+     * - admin: 常に許可
+     * - instructor: 自分の担当カリキュラムのテストのみ
+     * - student: 受験画面とは別。分析画面は不可
+     */
     public function view(User $user, Test $test): bool
     {
-        if ($user->isAdmin() || $user->isInstructor()) {
+        if ($user->isAdmin()) {
             return true;
         }
 
+        if ($user->isInstructor()) {
+            return $test->curriculum->instructor_id === $user->id;
+        }
+
+        // student は受験可否チェック（分析画面では authorize('view') を呼ばないので実質到達しない）
         return $test->isAvailableFor(Carbon::now());
     }
 

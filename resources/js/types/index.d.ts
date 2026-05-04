@@ -167,6 +167,33 @@ export interface TestSummary {
   min: number | null;
 }
 
+export interface ChoiceStat {
+  choice_id: number;
+  body: string;
+  is_correct: boolean;
+  count: number;
+  rate: number;
+}
+
+export interface QuestionAnalytics {
+  question_id: number;
+  position: number;
+  body: string;
+  score: number;
+  total_answers: number;
+  correct_count: number;
+  correct_rate: number;
+  choice_stats: ChoiceStat[];
+}
+
+export interface AnalyticsSummary {
+  total_submissions: number;
+  avg_score: number | null;
+  max_score: number | null;
+  min_score: number | null;
+  total_points: number;
+}
+
 export interface PaginatedData<T> {
   data: T[];
   current_page: number;
