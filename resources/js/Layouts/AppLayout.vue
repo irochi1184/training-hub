@@ -86,6 +86,11 @@
                 テスト一覧
               </NavLink>
             </li>
+            <li>
+              <NavLink href="/profile" :current="isCurrentPath('/profile')">
+                マイプロフィール
+              </NavLink>
+            </li>
           </template>
         </ul>
       </nav>
