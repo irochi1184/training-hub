@@ -8,8 +8,9 @@ test.describe('テスト分析フロー', () => {
         await page.goto('/tests');
         await page.waitForLoadState('networkidle');
 
-        // 受験者がいるテストの「分析」リンクをクリック
-        const analyticsLink = page.getByRole('link', { name: '分析' }).first();
+        // HTML基礎テストの行にある「分析」リンクをクリック
+        const testRow = page.locator('tr', { hasText: 'HTML基礎テスト' });
+        const analyticsLink = testRow.getByRole('link', { name: '分析' });
         await expect(analyticsLink).toBeVisible({ timeout: 5000 });
         await analyticsLink.click();
         await page.waitForLoadState('networkidle');
@@ -34,7 +35,8 @@ test.describe('テスト分析フロー', () => {
         await page.goto('/tests');
         await page.waitForLoadState('networkidle');
 
-        const analyticsLink = page.getByRole('link', { name: '分析' }).first();
+        const testRow = page.locator('tr', { hasText: 'HTML基礎テスト' });
+        const analyticsLink = testRow.getByRole('link', { name: '分析' });
         await expect(analyticsLink).toBeVisible({ timeout: 5000 });
         await analyticsLink.click();
         await page.waitForLoadState('networkidle');
@@ -48,7 +50,8 @@ test.describe('テスト分析フロー', () => {
         await page.goto('/tests');
         await page.waitForLoadState('networkidle');
 
-        await page.getByRole('link', { name: '分析' }).first().click();
+        const testRow = page.locator('tr', { hasText: 'HTML基礎テスト' });
+        await testRow.getByRole('link', { name: '分析' }).click();
         await page.waitForLoadState('networkidle');
 
         // 受験者一覧から最初の受験者リンクをクリック

@@ -50,16 +50,28 @@
         />
       </div>
 
-      <div class="mb-4 flex items-center gap-3">
-        <label class="text-xs font-medium text-slate-500">配点</label>
-        <input
-          v-model.number="question.score"
-          type="number"
-          min="1"
-          required
-          class="w-20 rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-        />
-        <span class="text-xs text-slate-400">点</span>
+      <div class="mb-4 flex items-center gap-4">
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-medium text-slate-500">配点</label>
+          <input
+            v-model.number="question.score"
+            type="number"
+            min="1"
+            required
+            class="w-20 rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+          />
+          <span class="text-xs text-slate-400">点</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-medium text-slate-500">形式</label>
+          <select
+            v-model="question.question_type"
+            class="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+          >
+            <option value="single">単一選択</option>
+            <option value="multiple">複数選択</option>
+          </select>
+        </div>
       </div>
 
       <div>
@@ -109,7 +121,9 @@
           </div>
         </div>
 
-        <p class="mt-1 text-xs text-slate-400">チェックボックスで正解を選択してください</p>
+        <p class="mt-1 text-xs text-slate-400">
+          {{ question.question_type === 'multiple' ? '複数の正解をチェックしてください' : 'チェックボックスで正解を1つ選択してください' }}
+        </p>
       </div>
     </div>
   </div>
@@ -125,6 +139,7 @@ export interface ChoiceForm {
 export interface QuestionForm {
   id?: number;
   body: string;
+  question_type: 'single' | 'multiple';
   score: number;
   choices: ChoiceForm[];
 }
@@ -141,7 +156,7 @@ function defaultChoices(): ChoiceForm[] {
 }
 
 function addQuestion(): void {
-  props.questions.push({ body: '', score: 1, choices: defaultChoices() });
+  props.questions.push({ body: '', question_type: 'single', score: 1, choices: defaultChoices() });
 }
 
 function removeQuestion(index: number): void {

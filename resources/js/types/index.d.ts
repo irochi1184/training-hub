@@ -75,6 +75,7 @@ export interface Question {
   id: number;
   test_id: number;
   body: string;
+  question_type: 'single' | 'multiple';
   position: number;
   score: number;
   choices?: Choice[];

@@ -60,11 +60,27 @@ class SubmissionController extends Controller
             return redirect()->route('submissions.show', $submission);
         }
 
+        // 既存回答を削除して再作成（複数選択対応）
+        $submission->answers()->delete();
+
         foreach ($request->validated('answers') as $answerData) {
-            $submission->answers()->updateOrCreate(
-                ['question_id' => $answerData['question_id']],
-                ['choice_id' => $answerData['choice_id'] ?? null],
-            );
+            $choiceIds = $answerData['choice_ids'] ?? [];
+
+            if (!empty($choiceIds)) {
+                // 複数選択問題
+                foreach ($choiceIds as $choiceId) {
+                    $submission->answers()->create([
+                        'question_id' => $answerData['question_id'],
+                        'choice_id' => $choiceId,
+                    ]);
+                }
+            } else {
+                // 単一選択問題
+                $submission->answers()->create([
+                    'question_id' => $answerData['question_id'],
+                    'choice_id' => $answerData['choice_id'] ?? null,
+                ]);
+            }
         }
 
         $scoreAction->execute($submission);

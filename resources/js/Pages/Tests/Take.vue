@@ -24,7 +24,7 @@
         v-for="(question, index) in test.questions"
         :key="question.id"
         class="bg-white rounded-lg border transition-colors"
-        :class="answers[question.id] ? 'border-slate-200' : 'border-orange-200'"
+        :class="isQuestionAnswered(question) ? 'border-slate-200' : 'border-orange-200'"
       >
         <!-- 問題ヘッダー -->
         <div class="flex items-start justify-between px-5 pt-5 pb-3">
@@ -39,23 +39,47 @@
 
         <!-- 選択肢 -->
         <div class="px-5 pb-5 space-y-2">
-          <label
-            v-for="choice in question.choices"
-            :key="choice.id"
-            class="flex items-center gap-3 p-3 rounded border cursor-pointer transition-colors"
-            :class="answers[question.id] === choice.id
-              ? 'bg-indigo-50 border-indigo-400'
-              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
-          >
-            <input
-              type="radio"
-              :name="`question_${question.id}`"
-              :value="choice.id"
-              v-model="answers[question.id]"
-              class="text-indigo-600 focus:ring-indigo-500"
-            />
-            <span class="text-sm text-slate-800">{{ choice.body }}</span>
-          </label>
+          <!-- 複数選択問題 -->
+          <template v-if="question.question_type === 'multiple'">
+            <p class="text-xs text-indigo-600 font-medium mb-1">複数選択可</p>
+            <label
+              v-for="choice in question.choices"
+              :key="choice.id"
+              class="flex items-center gap-3 p-3 rounded border cursor-pointer transition-colors"
+              :class="(multiAnswers[question.id] ?? []).includes(choice.id)
+                ? 'bg-indigo-50 border-indigo-400'
+                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
+            >
+              <input
+                type="checkbox"
+                :value="choice.id"
+                v-model="multiAnswers[question.id]"
+                class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+              />
+              <span class="text-sm text-slate-800">{{ choice.body }}</span>
+            </label>
+          </template>
+
+          <!-- 単一選択問題 -->
+          <template v-else>
+            <label
+              v-for="choice in question.choices"
+              :key="choice.id"
+              class="flex items-center gap-3 p-3 rounded border cursor-pointer transition-colors"
+              :class="answers[question.id] === choice.id
+                ? 'bg-indigo-50 border-indigo-400'
+                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
+            >
+              <input
+                type="radio"
+                :name="`question_${question.id}`"
+                :value="choice.id"
+                v-model="answers[question.id]"
+                class="text-indigo-600 focus:ring-indigo-500"
+              />
+              <span class="text-sm text-slate-800">{{ choice.body }}</span>
+            </label>
+          </template>
         </div>
       </div>
     </div>
@@ -101,12 +125,30 @@ const props = defineProps<{
   submission: Submission;
 }>();
 
-// 回答状態: { [question_id]: choice_id }
+// 回答状態: 単一選択は number、複数選択は number[]
 const answers = ref<Record<number, number | null>>({});
+const multiAnswers = ref<Record<number, number[]>>({});
 
-const answeredCount = computed(() =>
-  Object.values(answers.value).filter((v) => v !== null && v !== undefined).length,
-);
+// 複数選択の初期化
+if (props.test.questions) {
+  for (const q of props.test.questions) {
+    if (q.question_type === 'multiple') {
+      multiAnswers.value[q.id] = [];
+    }
+  }
+}
+
+const answeredCount = computed(() => {
+  let count = 0;
+  for (const q of props.test.questions ?? []) {
+    if (q.question_type === 'multiple') {
+      if ((multiAnswers.value[q.id] ?? []).length > 0) count++;
+    } else {
+      if (answers.value[q.id] !== null && answers.value[q.id] !== undefined) count++;
+    }
+  }
+  return count;
+});
 
 const unansweredCount = computed(() =>
   (props.test.questions?.length ?? 0) - answeredCount.value,
@@ -115,6 +157,13 @@ const unansweredCount = computed(() =>
 const allAnswered = computed(() =>
   answeredCount.value === (props.test.questions?.length ?? 0),
 );
+
+function isQuestionAnswered(question: { id: number; question_type: string }): boolean {
+  if (question.question_type === 'multiple') {
+    return (multiAnswers.value[question.id] ?? []).length > 0;
+  }
+  return answers.value[question.id] !== null && answers.value[question.id] !== undefined;
+}
 
 const showSubmitDialog = ref(false);
 const showUnansweredWarning = ref(false);
@@ -127,7 +176,7 @@ function requestSubmit(): void {
 }
 
 const submitForm = useForm<{
-  answers: { question_id: number; choice_id: number | null }[];
+  answers: { question_id: number; choice_id: number | null; choice_ids: number[] }[];
 }>({
   answers: [],
 });
@@ -135,7 +184,8 @@ const submitForm = useForm<{
 function doSubmit(): void {
   submitForm.answers = (props.test.questions ?? []).map((q) => ({
     question_id: q.id,
-    choice_id: answers.value[q.id] ?? null,
+    choice_id: q.question_type === 'multiple' ? null : (answers.value[q.id] ?? null),
+    choice_ids: q.question_type === 'multiple' ? (multiAnswers.value[q.id] ?? []) : [],
   }));
   submitForm.post(`/tests/${props.test.id}/submissions`);
 }

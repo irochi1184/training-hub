@@ -45,50 +45,51 @@
         <h2 class="text-sm font-semibold text-slate-700">問題別の結果</h2>
 
         <div
-          v-for="(answer, index) in answersWithQuestion"
-          :key="answer.id"
+          v-for="(result, index) in answersWithQuestion"
+          :key="result.id"
           class="bg-white rounded-lg border overflow-hidden"
-          :class="answerBorderClass(answer.is_correct)"
+          :class="answerBorderClass(result.is_correct)"
         >
           <!-- 問題ヘッダー -->
           <div
             class="flex items-center justify-between px-5 py-3 text-sm"
-            :class="answerHeaderClass(answer.is_correct)"
+            :class="answerHeaderClass(result.is_correct)"
           >
             <div class="flex items-center gap-2">
               <!-- 正誤アイコン -->
-              <svg v-if="answer.is_correct === true" class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <svg v-if="result.is_correct === true" class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              <svg v-else-if="answer.is_correct === false" class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <svg v-else-if="result.is_correct === false" class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
               <svg v-else class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
               </svg>
               <span class="font-medium">第 {{ index + 1 }} 問</span>
-              <span class="text-xs opacity-70">{{ answer.question?.score ?? 0 }}点</span>
+              <span class="text-xs opacity-70">{{ result.question.score }}点</span>
+              <span v-if="result.question.question_type === 'multiple'" class="text-xs text-indigo-500 font-medium">複数選択</span>
             </div>
             <span class="text-xs font-medium">
-              {{ answer.is_correct === true ? '正解' : answer.is_correct === false ? '不正解' : '未回答' }}
+              {{ result.is_correct === true ? '正解' : result.is_correct === false ? '不正解' : '未回答' }}
             </span>
           </div>
 
           <!-- 問題内容 -->
           <div class="px-5 py-4">
-            <p class="text-sm text-slate-800 font-medium mb-3">{{ answer.question?.body }}</p>
+            <p class="text-sm text-slate-800 font-medium mb-3">{{ result.question.body }}</p>
 
             <!-- 選択肢と回答状況 -->
             <div class="space-y-2">
               <div
-                v-for="choice in answer.question?.choices"
+                v-for="choice in result.question.choices"
                 :key="choice.id"
                 class="flex items-center gap-2 text-sm px-3 py-2 rounded"
-                :class="choiceClass(choice, answer)"
+                :class="choiceClass(choice, result)"
               >
                 <!-- 選択アイコン -->
                 <span class="shrink-0 w-4">
-                  <svg v-if="answer.choice_id === choice.id" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <svg v-if="result.selected_choice_ids.includes(choice.id)" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </span>
@@ -107,7 +108,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import type { Submission, Answer, Choice } from '@/types';
+import type { Submission, Answer, Choice, Question } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { formatDateTime } from '@/utils/formatDate';
 
@@ -115,8 +116,31 @@ const props = defineProps<{
   submission: Submission;
 }>();
 
-// 問題付きの回答一覧
-const answersWithQuestion = computed(() => props.submission.answers ?? []);
+interface QuestionResult {
+  id: number;
+  question: Question;
+  is_correct: boolean | null;
+  selected_choice_ids: number[];
+}
+
+// 問題ごとにグループ化した回答一覧
+const answersWithQuestion = computed<QuestionResult[]>(() => {
+  const questions = props.submission.test?.questions ?? [];
+  const answers = props.submission.answers ?? [];
+
+  return questions.map((question) => {
+    const questionAnswers = answers.filter((a) => a.question_id === question.id);
+    const selectedIds = questionAnswers.map((a) => a.choice_id).filter((id): id is number => id !== null);
+    const isCorrect = questionAnswers.length > 0 ? questionAnswers[0].is_correct : null;
+
+    return {
+      id: question.id,
+      question,
+      is_correct: isCorrect,
+      selected_choice_ids: selectedIds,
+    };
+  });
+});
 
 // 満点（全問題の配点合計）
 const totalScore = computed(() => {
@@ -153,8 +177,8 @@ function answerHeaderClass(isCorrect: boolean | null): string {
 }
 
 // 選択肢の表示クラス
-function choiceClass(choice: Choice, answer: Answer): string {
-  const isSelected = answer.choice_id === choice.id;
+function choiceClass(choice: Choice, result: QuestionResult): string {
+  const isSelected = result.selected_choice_ids.includes(choice.id);
   const isCorrect = choice.is_correct;
 
   if (isCorrect && isSelected) return 'bg-emerald-50 text-emerald-800';
