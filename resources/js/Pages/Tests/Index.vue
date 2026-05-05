@@ -17,7 +17,7 @@
 
       <DataTable
         :empty="tests.data.length === 0"
-        empty-message="テストがありません"
+        empty-message="テストがまだ作成されていません"
         :col-span="canCreate ? 7 : 6"
       >
         <template #head>
@@ -100,6 +100,18 @@
               </div>
             </td>
           </tr>
+        </template>
+
+        <template v-if="canCreate" #empty-action>
+          <Link
+            href="/tests/create"
+            class="mt-2 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            最初のテストを作成
+          </Link>
         </template>
       </DataTable>
 

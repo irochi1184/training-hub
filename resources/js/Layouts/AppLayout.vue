@@ -1,12 +1,40 @@
 <template>
   <div class="min-h-screen bg-slate-50 flex">
+    <!-- モバイルオーバーレイ -->
+    <Transition
+      enter-active-class="transition-opacity duration-200"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="sidebarOpen"
+        class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        @click="sidebarOpen = false"
+      />
+    </Transition>
+
     <!-- サイドバー -->
-    <aside class="w-60 bg-slate-900 flex flex-col shrink-0">
+    <aside
+      class="fixed inset-y-0 left-0 z-50 w-60 bg-slate-900 flex flex-col transform transition-transform duration-200 lg:relative lg:translate-x-0"
+      :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    >
       <!-- ロゴ -->
-      <div class="h-16 flex items-center px-6 border-b border-white/10">
+      <div class="h-16 flex items-center justify-between px-6 border-b border-white/10">
         <Link href="/dashboard" class="text-lg font-bold text-white tracking-tight">
           Training Hub
         </Link>
+        <button
+          type="button"
+          class="lg:hidden text-slate-400 hover:text-white transition-colors"
+          @click="sidebarOpen = false"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       <!-- ナビゲーション -->
@@ -94,9 +122,20 @@
     <!-- メインエリア -->
     <div class="flex-1 flex flex-col min-w-0">
       <!-- ヘッダー -->
-      <header class="h-16 bg-white border-b border-slate-200/60 flex items-center justify-end px-6 shrink-0">
-        <div class="flex items-center gap-4">
-          <span class="text-sm text-slate-700 font-medium">{{ user.name }}</span>
+      <header class="h-16 bg-white border-b border-slate-200/60 flex items-center justify-between px-4 sm:px-6 shrink-0">
+        <!-- モバイルメニューボタン -->
+        <button
+          type="button"
+          class="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 transition-colors"
+          @click="sidebarOpen = true"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <div class="flex items-center gap-3 sm:gap-4 ml-auto">
+          <span class="text-sm text-slate-700 font-medium hidden sm:inline">{{ user.name }}</span>
           <span class="text-xs text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full font-medium">{{ roleLabel }}</span>
           <button
             type="button"
@@ -112,7 +151,7 @@
       <FlashMessage />
 
       <!-- ページコンテンツ -->
-      <main class="flex-1 p-6 overflow-auto">
+      <main class="flex-1 p-4 sm:p-6 overflow-auto">
         <slot />
       </main>
     </div>
@@ -120,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import type { PageProps } from '@/types';
 import FlashMessage from '@/Components/FlashMessage.vue';
@@ -154,6 +193,8 @@ const NavLink = defineComponent({
 const page = usePage<PageProps>();
 const user = computed(() => page.props.auth.user);
 
+const sidebarOpen = ref(false);
+
 const riskAlertCount = computed(() => {
   const props = page.props as PageProps & { risk_alert_count?: number };
   return props.risk_alert_count ?? 0;
@@ -175,4 +216,9 @@ function isCurrentPath(path: string): boolean {
 function logout(): void {
   router.post('/logout');
 }
+
+// ページ遷移時にモバイルメニューを閉じる
+router.on('navigate', () => {
+  sidebarOpen.value = false;
+});
 </script>
