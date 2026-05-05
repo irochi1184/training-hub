@@ -79,6 +79,11 @@ class User extends Authenticatable
         return $this->hasOne(Enrollment::class)->latestOfMany();
     }
 
+    public function studentProfile(): HasOne
+    {
+        return $this->hasOne(StudentProfile::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;

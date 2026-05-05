@@ -12,6 +12,8 @@ use App\Models\Enrollment;
 use App\Models\Organization;
 use App\Models\Question;
 use App\Models\RiskAlert;
+use App\Models\StudentProfile;
+use App\Models\StudentSkill;
 use App\Models\Submission;
 use App\Models\Test;
 use App\Models\User;
@@ -245,6 +247,28 @@ class DatabaseSeeder extends Seeder
             'reason' => RiskAlertReason::LowUnderstanding->value,
             'detail' => '理解度平均: 2.0',
             'resolved_at' => null,
+        ]);
+
+        // プロフィールデータ
+        $profile1 = StudentProfile::create([
+            'user_id' => $students->get(0)->id,
+            'bio' => 'プログラミング初心者です。IT業界への転職を目指しています。',
+            'learning_goal' => '3ヶ月以内にWebアプリを一人で作れるようになる',
+        ]);
+        StudentSkill::insert([
+            ['student_profile_id' => $profile1->id, 'skill_name' => 'HTML', 'level' => 2],
+            ['student_profile_id' => $profile1->id, 'skill_name' => 'CSS', 'level' => 1],
+            ['student_profile_id' => $profile1->id, 'skill_name' => 'JavaScript', 'level' => 1],
+        ]);
+
+        $profile2 = StudentProfile::create([
+            'user_id' => $students->get(1)->id,
+            'bio' => '大学で情報工学を学んでいます。実践的なスキルを身につけたいです。',
+            'learning_goal' => 'Laravel でポートフォリオサイトを完成させる',
+        ]);
+        StudentSkill::insert([
+            ['student_profile_id' => $profile2->id, 'skill_name' => 'PHP', 'level' => 2],
+            ['student_profile_id' => $profile2->id, 'skill_name' => 'MySQL', 'level' => 2],
         ]);
     }
 }

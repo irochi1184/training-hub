@@ -194,6 +194,20 @@ export interface AnalyticsSummary {
   total_points: number;
 }
 
+export interface StudentSkill {
+  id?: number;
+  skill_name: string;
+  level: 1 | 2 | 3;
+}
+
+export interface StudentProfile {
+  id: number;
+  user_id: number;
+  bio: string | null;
+  learning_goal: string | null;
+  skills?: StudentSkill[];
+}
+
 export interface PaginatedData<T> {
   data: T[];
   current_page: number;

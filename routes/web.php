@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\DailyReportCommentController;
 use App\Http\Controllers\DailyReportController;
@@ -33,6 +34,13 @@ Route::middleware('auth')->group(function () {
     // 日報（管理者・講師向け一覧）
     Route::middleware('role:admin,instructor')->group(function () {
         Route::get('/daily-reports', [DailyReportController::class, 'index'])->name('daily-reports.index');
+    });
+
+    // プロフィール（受講生）
+    Route::middleware('role:student')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+        Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     });
 
     // 日報（受講生向け提出）
