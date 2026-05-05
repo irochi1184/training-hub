@@ -21,7 +21,7 @@ class ExportController extends Controller
         Gate::authorize('viewAny-export');
 
         $curricula = Curriculum::orderBy('name')->get();
-        $tests = Test::with('curriculum')->orderByDesc('created_at')->get();
+        $tests = Test::with('curriculum:id,name')->orderByDesc('created_at')->get(['id', 'title', 'curriculum_id', 'created_at']);
 
         return Inertia::render('Exports/Index', [
             'curricula' => $curricula,
