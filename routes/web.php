@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\DailyReportCommentController;
@@ -29,6 +30,14 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin,instructor')->group(function () {
         Route::get('/students', [StudentController::class, 'index'])->name('students.index');
         Route::get('/students/{user}', [StudentController::class, 'show'])->name('students.show');
+    });
+
+    // エンロールメント管理
+    Route::middleware('role:admin,instructor')->group(function () {
+        Route::get('/enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
+        Route::post('/enrollments', [EnrollmentController::class, 'store'])->name('enrollments.store');
+        Route::post('/enrollments/bulk', [EnrollmentController::class, 'bulkStore'])->name('enrollments.bulk-store');
+        Route::delete('/enrollments/{enrollment}', [EnrollmentController::class, 'destroy'])->name('enrollments.destroy');
     });
 
     // 日報（管理者・講師向け一覧）
