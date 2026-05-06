@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\ProfileController;
@@ -101,6 +102,18 @@ Route::middleware('auth')->group(function () {
         Route::get('/exports', [ExportController::class, 'index'])->name('exports.index');
         Route::get('/exports/daily-reports', [ExportController::class, 'dailyReports'])->name('exports.daily-reports');
         Route::get('/exports/test-results', [ExportController::class, 'testResults'])->name('exports.test-results');
+    });
+
+    // お知らせ
+    Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
+
+    Route::middleware('role:admin,instructor')->group(function () {
+        Route::get('/announcements-create', [AnnouncementController::class, 'create'])->name('announcements.create');
+        Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
+        Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
+        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
     });
 
     // カリキュラム管理（admin のみ）

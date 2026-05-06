@@ -231,6 +231,20 @@ export interface PaginatedData<T> {
   links: { url: string | null; label: string; active: boolean }[];
 }
 
+export interface Announcement {
+  id: number;
+  organization_id: number;
+  created_by: number;
+  title: string;
+  body: string;
+  priority: 'normal' | 'important';
+  target_type: 'all' | 'curriculum' | 'user';
+  target_id: number | null;
+  published_at: string | null;
+  created_at: string;
+  creator?: { id: number; name: string };
+}
+
 // Inertia shared data
 export interface PageProps {
   auth: {
@@ -240,4 +254,6 @@ export interface PageProps {
     success?: string;
     error?: string;
   };
+  unread_announcement_count?: number;
+  risk_alert_count?: number;
 }

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\RiskAlertReason;
 use App\Enums\UserRole;
+use App\Models\Announcement;
 use App\Models\Answer;
 use App\Models\Choice;
 use App\Models\Curriculum;
@@ -325,6 +326,29 @@ class DatabaseSeeder extends Seeder
         StudentSkill::insert([
             ['student_profile_id' => $profile2->id, 'skill_name' => 'PHP', 'level' => 2],
             ['student_profile_id' => $profile2->id, 'skill_name' => 'MySQL', 'level' => 2],
+        ]);
+
+        // お知らせ
+        Announcement::create([
+            'organization_id' => $org->id,
+            'created_by' => $admin->id,
+            'title' => '全体連絡: システムメンテナンスのお知らせ',
+            'body' => '来週月曜日の深夜にシステムメンテナンスを実施します。ご不便をおかけしますが、ご了承ください。',
+            'priority' => 'important',
+            'target_type' => 'all',
+            'target_id' => null,
+            'published_at' => Carbon::now()->subDay(),
+        ]);
+
+        Announcement::create([
+            'organization_id' => $org->id,
+            'created_by' => $instructor1->id,
+            'title' => 'IT研修: 次回の課題について',
+            'body' => '次回までにHTMLの基本構造について予習しておいてください。',
+            'priority' => 'normal',
+            'target_type' => 'curriculum',
+            'target_id' => $curriculum1->id,
+            'published_at' => Carbon::now()->subHours(12),
         ]);
     }
 }

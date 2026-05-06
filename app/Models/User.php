@@ -74,6 +74,16 @@ class User extends Authenticatable
         return $this->hasMany(RiskAlert::class);
     }
 
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(Announcement::class, 'created_by');
+    }
+
+    public function announcementReads(): HasMany
+    {
+        return $this->hasMany(AnnouncementRead::class);
+    }
+
     public function latestEnrollment(): HasOne
     {
         return $this->hasOne(Enrollment::class)->latestOfMany();
