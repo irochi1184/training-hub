@@ -23,7 +23,7 @@ class StoreTestRequest extends FormRequest
             'closes_at' => ['nullable', 'date', 'after:opens_at'],
             'questions' => ['required', 'array', 'min:1'],
             'questions.*.body' => ['required', 'string'],
-            'questions.*.question_type' => ['required', 'string', 'in:single,multiple'],
+            'questions.*.question_type' => ['nullable', 'string', 'in:single,multiple'],
             'questions.*.score' => ['required', 'integer', 'min:1'],
             'questions.*.choices' => ['required', 'array', 'min:2'],
             'questions.*.choices.*.body' => ['required', 'string'],
