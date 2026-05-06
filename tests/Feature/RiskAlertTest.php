@@ -29,7 +29,8 @@ class RiskAlertTest extends TestCase
     public function test_instructorがアラートを解消できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $alert = RiskAlert::factory()->create(['curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($instructor)->patch("/risk-alerts/{$alert->id}/resolve");
@@ -99,7 +100,8 @@ class RiskAlertTest extends TestCase
     public function test_instructorのカリキュラム選択肢は担当分のみ(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $mine = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $mine = Curriculum::factory()->create();
+        $mine->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $others = Curriculum::factory()->create();
 
         $response = $this->actingAs($instructor)->get('/risk-alerts');
@@ -115,7 +117,8 @@ class RiskAlertTest extends TestCase
     public function test_解消済みアラートを再度解消するとエラー(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $alert = RiskAlert::factory()->resolved()->create(['curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($instructor)->patch("/risk-alerts/{$alert->id}/resolve");

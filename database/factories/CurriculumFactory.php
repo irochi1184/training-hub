@@ -21,10 +21,22 @@ class CurriculumFactory extends Factory
 
         return [
             'organization_id' => Organization::factory(),
-            'instructor_id' => User::factory()->instructor(),
             'name' => fake()->randomElement(['IT研修', 'ロジック研修【Java】', 'Webアプリ開発', 'データ分析入門']),
             'starts_on' => $startsOn->format('Y-m-d'),
             'ends_on' => $endsOn->format('Y-m-d'),
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Curriculum $curriculum) {
+            // メイン講師が未登録なら自動で1人アタッチ
+            if ($curriculum->instructors()->count() === 0) {
+                $instructor = User::factory()->instructor()->create([
+                    'organization_id' => $curriculum->organization_id,
+                ]);
+                $curriculum->instructors()->attach($instructor->id, ['role' => 'main']);
+            }
+        });
     }
 }

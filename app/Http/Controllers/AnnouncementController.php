@@ -153,7 +153,7 @@ class AnnouncementController extends Controller
 
         if ($user->isInstructor()) {
             // instructor は自分作成 + 公開済みで自分宛
-            $curriculumIds = $user->instructedCurricula()->pluck('id');
+            $curriculumIds = $user->instructedCurricula()->pluck('curricula.id');
 
             return $query->where(function ($q) use ($user, $curriculumIds) {
                 $q->where('created_by', $user->id)
@@ -200,7 +200,7 @@ class AnnouncementController extends Controller
         $query = Curriculum::orderBy('name');
 
         if ($user->isInstructor()) {
-            $query->where('instructor_id', $user->id);
+            $query->whereHas('instructors', fn ($q) => $q->where('users.id', $user->id));
         }
 
         return $query->get(['id', 'name']);
@@ -212,7 +212,7 @@ class AnnouncementController extends Controller
         $query = User::where('role', 'student')->orderBy('name');
 
         if ($user->isInstructor()) {
-            $curriculumIds = $user->instructedCurricula()->pluck('id');
+            $curriculumIds = $user->instructedCurricula()->pluck('curricula.id');
             $query->whereHas('enrollments', fn ($q) => $q->whereIn('curriculum_id', $curriculumIds));
         }
 

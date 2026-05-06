@@ -26,7 +26,7 @@ class TestPolicy
         }
 
         if ($user->isInstructor()) {
-            return $test->curriculum->instructor_id === $user->id;
+            return $test->curriculum->hasInstructor($user->id);
         }
 
         // student は受験可否チェック（分析画面では authorize('view') を呼ばないので実質到達しない）
@@ -49,7 +49,7 @@ class TestPolicy
         }
 
         if ($user->isInstructor()) {
-            return $test->curriculum->instructor_id === $user->id;
+            return $test->curriculum->hasInstructor($user->id);
         }
 
         return false;
@@ -66,7 +66,7 @@ class TestPolicy
         }
 
         if ($user->isInstructor()) {
-            return $test->curriculum->instructor_id === $user->id;
+            return $test->curriculum->hasInstructor($user->id);
         }
 
         return false;

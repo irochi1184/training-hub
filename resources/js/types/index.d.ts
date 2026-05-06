@@ -16,11 +16,11 @@ export interface Organization {
 export interface Curriculum {
   id: number;
   organization_id: number;
-  instructor_id: number;
   name: string;
   starts_on: string;
   ends_on: string;
-  instructor?: User;
+  main_instructors?: User[];
+  sub_instructors?: User[];
 }
 
 export interface Enrollment {

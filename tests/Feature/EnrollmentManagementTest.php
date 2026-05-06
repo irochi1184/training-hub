@@ -30,7 +30,8 @@ class EnrollmentManagementTest extends TestCase
     public function test_instructorが担当カリキュラムのみ表示される(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $own = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $own = Curriculum::factory()->create();
+        $own->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $other = Curriculum::factory()->create();
 
         $response = $this->actingAs($instructor)->get('/enrollments');

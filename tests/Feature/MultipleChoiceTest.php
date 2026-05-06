@@ -21,7 +21,8 @@ class MultipleChoiceTest extends TestCase
     private function createTestWithMultipleChoice(): array
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $student = User::factory()->student()->create(['organization_id' => $instructor->organization_id]);
         Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
@@ -60,7 +61,8 @@ class MultipleChoiceTest extends TestCase
     public function test_複数選択問題を含むテストを作成できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
 
         $response = $this->actingAs($instructor)->post('/tests', [
             'curriculum_id' => $curriculum->id,
@@ -160,7 +162,8 @@ class MultipleChoiceTest extends TestCase
     public function test_期間外のテストは受験できない(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $student = User::factory()->student()->create(['organization_id' => $instructor->organization_id]);
         Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 
@@ -179,7 +182,8 @@ class MultipleChoiceTest extends TestCase
     public function test_終了後のテストは受験できない(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $student = User::factory()->student()->create(['organization_id' => $instructor->organization_id]);
         Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
 

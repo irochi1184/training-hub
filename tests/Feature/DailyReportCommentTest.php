@@ -18,7 +18,8 @@ class DailyReportCommentTest extends TestCase
     public function test_instructorが日報にコメントを追加できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $report = DailyReport::factory()->create(['curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($instructor)->post("/daily-reports/{$report->id}/comments", [
@@ -51,7 +52,8 @@ class DailyReportCommentTest extends TestCase
     public function test_instructorが自分のコメントを削除できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $report = DailyReport::factory()->create(['curriculum_id' => $curriculum->id]);
         $comment = DailyReportComment::factory()->create([
             'daily_report_id' => $report->id,
@@ -90,7 +92,8 @@ class DailyReportCommentTest extends TestCase
         $ownerInstructor = User::factory()->instructor()->create();
         $otherInstructor = User::factory()->instructor()->create();
 
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $ownerInstructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$ownerInstructor->id => ['role' => 'main']]);
         $report = DailyReport::factory()->create(['curriculum_id' => $curriculum->id]);
         $comment = DailyReportComment::factory()->create([
             'daily_report_id' => $report->id,
@@ -108,7 +111,8 @@ class DailyReportCommentTest extends TestCase
     public function test_コメント本文が空だとバリデーションエラー(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $report = DailyReport::factory()->create(['curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($instructor)->post("/daily-reports/{$report->id}/comments", [

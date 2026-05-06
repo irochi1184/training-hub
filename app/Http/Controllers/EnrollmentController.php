@@ -19,7 +19,7 @@ class EnrollmentController extends Controller
 
         $curriculaQuery = Curriculum::withCount('enrollments')->orderBy('name');
         if ($user->isInstructor()) {
-            $curriculaQuery->where('instructor_id', $user->id);
+            $curriculaQuery->whereHas('instructors', fn ($q) => $q->where('users.id', $user->id));
         }
         $curricula = $curriculaQuery->get();
 
@@ -125,7 +125,7 @@ class EnrollmentController extends Controller
         }
 
         $curriculum = Curriculum::findOrFail($curriculumId);
-        if ($curriculum->instructor_id !== $user->id) {
+        if (!$curriculum->hasInstructor($user->id)) {
             abort(403);
         }
     }

@@ -71,18 +71,23 @@ class DatabaseSeeder extends Seeder
 
         $curriculum1 = Curriculum::create([
             'organization_id' => $org->id,
-            'instructor_id' => $instructor1->id,
             'name' => 'IT研修',
             'starts_on' => $curriculum1Start->toDateString(),
             'ends_on' => $curriculum1End->toDateString(),
         ]);
+        $curriculum1->instructors()->attach([
+            $instructor1->id => ['role' => 'main'],
+            $instructor2->id => ['role' => 'sub'],
+        ]);
 
         $curriculum2 = Curriculum::create([
             'organization_id' => $org->id,
-            'instructor_id' => $instructor2->id,
             'name' => 'ロジック研修【Java】',
             'starts_on' => $curriculum2Start->toDateString(),
             'ends_on' => $curriculum2End->toDateString(),
+        ]);
+        $curriculum2->instructors()->attach([
+            $instructor2->id => ['role' => 'main'],
         ]);
 
         foreach ($students->slice(0, 3) as $student) {

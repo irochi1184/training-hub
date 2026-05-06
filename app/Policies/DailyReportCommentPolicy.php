@@ -15,7 +15,7 @@ class DailyReportCommentPolicy
         }
 
         if ($user->isInstructor()) {
-            return $report->curriculum->instructor_id === $user->id;
+            return $report->curriculum->hasInstructor($user->id);
         }
 
         return false;

@@ -144,7 +144,8 @@ class DashboardTest extends TestCase
     public function test_instructorダッシュボードは担当カリキュラムのみに絞られる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $myCurriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $myCurriculum = Curriculum::factory()->create();
+        $myCurriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $otherCurriculum = Curriculum::factory()->create();
 
         $myStudent = User::factory()->student()->create();
@@ -185,7 +186,8 @@ class DashboardTest extends TestCase
     public function test_instructorダッシュボードの日報提出率は担当受講生のみを母数とする(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $myCurriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $myCurriculum = Curriculum::factory()->create();
+        $myCurriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $otherCurriculum = Curriculum::factory()->create();
 
         $myStudent = User::factory()->student()->create();

@@ -78,7 +78,7 @@ class DashboardController extends Controller
 
     private function instructorData(User $user): array
     {
-        $curriculumIds = $user->instructedCurricula()->pluck('id');
+        $curriculumIds = $user->instructedCurricula()->pluck('curricula.id');
 
         $riskAlertCount = RiskAlert::whereIn('curriculum_id', $curriculumIds)
             ->whereNull('resolved_at')

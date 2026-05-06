@@ -24,7 +24,8 @@ class DetectRiskActionTest extends TestCase
     private function setupCurriculumWithStudent(): array
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $student = User::factory()->student()->create();
         Enrollment::factory()->create([
             'curriculum_id' => $curriculum->id,
