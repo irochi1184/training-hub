@@ -37,6 +37,9 @@ class SubmissionPolicy
             return false;
         }
 
-        return !$test->submissions()->where('user_id', $user->id)->exists();
+        $remaining = $test->remainingAttempts($user->id);
+
+        // null = 無制限、0 = 残り回数なし
+        return $remaining === null || $remaining > 0;
     }
 }

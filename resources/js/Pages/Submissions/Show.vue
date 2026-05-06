@@ -15,6 +15,8 @@
         <p class="text-sm text-slate-500 mb-6">
           受験者: {{ submission.user?.name ?? '—' }}
           <span class="mx-2 text-slate-300">|</span>
+          第{{ submission.attempt }}回目
+          <span class="mx-2 text-slate-300">|</span>
           提出日時: {{ submission.submitted_at ? formatDateTime(submission.submitted_at) : '未提出' }}
         </p>
 
@@ -36,6 +38,31 @@
               />
             </div>
             <p class="text-sm text-slate-500 mt-2">正解率: {{ scorePercent }}%</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 受験履歴（複数回受験時のみ表示） -->
+      <div v-if="allAttempts.length > 1" class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6 mb-6">
+        <h2 class="text-sm font-semibold text-slate-700 mb-3">受験履歴（最高点: {{ bestScore }}点）</h2>
+        <div class="space-y-2">
+          <div
+            v-for="attempt in allAttempts"
+            :key="attempt.id"
+            class="flex items-center justify-between px-3 py-2 rounded text-sm"
+            :class="attempt.id === submission.id ? 'bg-indigo-50 text-indigo-800' : 'text-slate-600 hover:bg-slate-50'"
+          >
+            <span>第{{ attempt.attempt }}回目</span>
+            <span class="font-medium">{{ attempt.score }}点</span>
+            <span class="text-xs text-slate-400">{{ attempt.submitted_at ? formatDateTime(attempt.submitted_at) : '' }}</span>
+            <Link
+              v-if="attempt.id !== submission.id"
+              :href="`/submissions/${attempt.id}`"
+              class="text-xs text-indigo-600 hover:text-indigo-800"
+            >
+              詳細
+            </Link>
+            <span v-else class="text-xs text-indigo-500">表示中</span>
           </div>
         </div>
       </div>
@@ -108,12 +135,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import type { Submission, Answer, Choice, Question } from '@/types';
+import type { Submission, Answer, Choice, Question, AttemptSummary } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { formatDateTime } from '@/utils/formatDate';
 
 const props = defineProps<{
   submission: Submission;
+  allAttempts: AttemptSummary[];
+  bestScore: number | null;
 }>();
 
 interface QuestionResult {

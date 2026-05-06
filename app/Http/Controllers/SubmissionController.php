@@ -17,30 +17,41 @@ class SubmissionController extends Controller
     public function create(Request $request, Test $test): Response|RedirectResponse
     {
         $test->load(['questions.choices']);
+        $userId = $request->user()->id;
 
-        // 既に提出済みの場合は結果ページへリダイレクト
-        $existingSubmission = $test->submissions()
-            ->where('user_id', $request->user()->id)
+        // 受験中（未提出）の提出があればそのまま継続
+        $inProgress = $test->submissions()
+            ->where('user_id', $userId)
+            ->whereNull('submitted_at')
             ->first();
 
-        if ($existingSubmission && $existingSubmission->isSubmitted()) {
-            return redirect()->route('submissions.show', $existingSubmission);
-        }
-
-        // 受験中（未提出）の場合はそのまま継続
-        if ($existingSubmission) {
+        if ($inProgress) {
             return Inertia::render('Tests/Take', [
                 'test' => $test,
-                'submission' => $existingSubmission,
+                'submission' => $inProgress,
             ]);
         }
 
-        // 新規受験: ポリシーチェック
+        // 再受験不可（max_attempts=null）で提出済みがあれば最新結果へリダイレクト
+        $latestSubmitted = $test->submissions()
+            ->where('user_id', $userId)
+            ->whereNotNull('submitted_at')
+            ->latest('attempt')
+            ->first();
+
+        if ($latestSubmitted && !$test->allowsRetake()) {
+            return redirect()->route('submissions.show', $latestSubmitted);
+        }
+
+        // 新規受験: ポリシーチェック（残り回数確認含む）
         $this->authorize('create', [Submission::class, $test]);
+
+        $nextAttempt = $latestSubmitted ? $latestSubmitted->attempt + 1 : 1;
 
         $submission = Submission::create([
             'test_id' => $test->id,
-            'user_id' => $request->user()->id,
+            'user_id' => $userId,
+            'attempt' => $nextAttempt,
             'started_at' => Carbon::now(),
         ]);
 
@@ -54,6 +65,8 @@ class SubmissionController extends Controller
     {
         $submission = Submission::where('test_id', $test->id)
             ->where('user_id', $request->user()->id)
+            ->whereNull('submitted_at')
+            ->latest('attempt')
             ->firstOrFail();
 
         if ($submission->isSubmitted()) {
@@ -99,6 +112,19 @@ class SubmissionController extends Controller
             'user',
         ]);
 
-        return Inertia::render('Submissions/Show', ['submission' => $submission]);
+        // 再受験対応: 同一テスト・同一ユーザーの全受験履歴
+        $allAttempts = Submission::where('test_id', $submission->test_id)
+            ->where('user_id', $submission->user_id)
+            ->whereNotNull('submitted_at')
+            ->orderBy('attempt')
+            ->get(['id', 'attempt', 'score', 'submitted_at']);
+
+        $bestScore = $allAttempts->max('score');
+
+        return Inertia::render('Submissions/Show', [
+            'submission' => $submission,
+            'allAttempts' => $allAttempts,
+            'bestScore' => $bestScore,
+        ]);
     }
 }

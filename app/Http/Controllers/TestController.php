@@ -150,6 +150,22 @@ class TestController extends Controller
 
         $tests = $query->paginate(20);
 
+        // 学生向け: 各テストの受験回数・最高点・残り回数を付与
+        if ($user->isStudent()) {
+            $tests->getCollection()->transform(function ($test) use ($user) {
+                $submissions = $test->submissions()
+                    ->where('user_id', $user->id)
+                    ->whereNotNull('submitted_at')
+                    ->get(['score', 'attempt']);
+
+                $test->my_attempts = $submissions->count();
+                $test->my_best_score = $submissions->max('score');
+                $test->remaining_attempts = $test->remainingAttempts($user->id);
+
+                return $test;
+            });
+        }
+
         return Inertia::render('Tests/Index', ['tests' => $tests]);
     }
 
@@ -180,6 +196,7 @@ class TestController extends Controller
             'time_limit_minutes' => $validated['time_limit_minutes'] ?? null,
             'opens_at' => $validated['opens_at'] ?? null,
             'closes_at' => $validated['closes_at'] ?? null,
+            'max_attempts' => $validated['max_attempts'] ?? null,
         ]);
 
         $this->syncQuestions($test, $validated['questions']);
@@ -214,6 +231,7 @@ class TestController extends Controller
             'time_limit_minutes' => $validated['time_limit_minutes'] ?? null,
             'opens_at' => $validated['opens_at'] ?? null,
             'closes_at' => $validated['closes_at'] ?? null,
+            'max_attempts' => $validated['max_attempts'] ?? null,
         ]);
 
         $test->questions()->delete();

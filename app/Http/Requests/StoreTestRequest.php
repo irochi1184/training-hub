@@ -19,6 +19,7 @@ class StoreTestRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'time_limit_minutes' => ['nullable', 'integer', 'min:1'],
             'opens_at' => ['nullable', 'date'],
+            'max_attempts' => ['nullable', 'integer', 'min:0'],
             'closes_at' => ['nullable', 'date', 'after:opens_at'],
             'questions' => ['required', 'array', 'min:1'],
             'questions.*.body' => ['required', 'string'],
