@@ -151,6 +151,11 @@
         </div>
       </div>
 
+      <!-- 成績推移グラフ -->
+      <div class="mb-6">
+        <ScoreTrendChart :data="scoreTrend" />
+      </div>
+
       <!-- タブ -->
       <div class="border-b border-slate-200/60 mb-6">
         <nav class="flex gap-6">
@@ -339,12 +344,14 @@ import type {
   RiskAlert,
   UnderstandingTrendItem,
   TestSummary,
+  ScoreTrendItem,
   StudentProfile,
 } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
 import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
 import ReasonBadge from '@/Components/ReasonBadge.vue';
+import ScoreTrendChart from '@/Components/ScoreTrendChart.vue';
 import { formatDate, formatDateTime } from '@/utils/formatDate';
 import { understandingBarClass } from '@/utils/understandingLevel';
 
@@ -356,6 +363,7 @@ const props = defineProps<{
   riskAlerts: RiskAlert[];
   understandingTrend: UnderstandingTrendItem[];
   testSummary: TestSummary;
+  scoreTrend: ScoreTrendItem[];
 }>();
 
 type TabKey = 'reports' | 'submissions' | 'alerts' | 'profile';

@@ -181,6 +181,13 @@ export interface TestSummary {
   min: number | null;
 }
 
+export interface ScoreTrendItem {
+  test_title: string;
+  submitted_at: string;
+  score: number;
+  total_points: number;
+}
+
 export interface ChoiceStat {
   choice_id: number;
   body: string;
