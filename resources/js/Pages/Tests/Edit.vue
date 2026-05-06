@@ -140,6 +140,7 @@ const form = useForm<{
   questions: (props.test.questions ?? []).map((q) => ({
     id: q.id,
     body: q.body,
+    question_type: q.question_type ?? 'single',
     score: q.score,
     choices: (q.choices ?? []).map((c) => ({
       id: c.id,

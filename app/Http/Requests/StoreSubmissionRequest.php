@@ -17,6 +17,8 @@ class StoreSubmissionRequest extends FormRequest
             'answers' => ['required', 'array'],
             'answers.*.question_id' => ['required', 'integer', 'exists:questions,id'],
             'answers.*.choice_id' => ['nullable', 'integer', 'exists:choices,id'],
+            'answers.*.choice_ids' => ['nullable', 'array'],
+            'answers.*.choice_ids.*' => ['integer', 'exists:choices,id'],
         ];
     }
 }

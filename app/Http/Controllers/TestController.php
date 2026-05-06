@@ -227,6 +227,7 @@ class TestController extends Controller
         foreach ($questions as $position => $questionData) {
             $question = $test->questions()->create([
                 'body' => $questionData['body'],
+                'question_type' => $questionData['question_type'] ?? 'single',
                 'position' => $position + 1,
                 'score' => $questionData['score'],
             ]);
