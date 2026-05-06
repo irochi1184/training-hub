@@ -30,6 +30,11 @@
               </NavLink>
             </li>
             <li>
+              <NavLink href="/enrollments" :current="isCurrentPath('/enrollments')">
+                受講生登録
+              </NavLink>
+            </li>
+            <li>
               <NavLink href="/daily-reports" :current="isCurrentPath('/daily-reports')">
                 日報一覧
               </NavLink>
