@@ -73,6 +73,7 @@ class StudentController extends Controller
             'dailyReports' => fn ($q) => $q->with('comments')->orderByDesc('reported_on')->limit(30),
             'submissions' => fn ($q) => $q->with('test')->whereNotNull('submitted_at')->orderByDesc('submitted_at'),
             'riskAlerts' => fn ($q) => $q->orderByDesc('created_at'),
+            'studentProfile.skills',
         ]);
 
         $understandingTrend = $user->dailyReports

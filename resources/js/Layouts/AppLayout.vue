@@ -58,6 +58,11 @@
               </NavLink>
             </li>
             <li>
+              <NavLink href="/enrollments" :current="isCurrentPath('/enrollments')">
+                受講生登録
+              </NavLink>
+            </li>
+            <li>
               <NavLink href="/daily-reports" :current="isCurrentPath('/daily-reports')">
                 日報一覧
               </NavLink>
@@ -112,6 +117,11 @@
             <li>
               <NavLink href="/tests" :current="isCurrentPath('/tests')">
                 テスト一覧
+              </NavLink>
+            </li>
+            <li>
+              <NavLink href="/profile" :current="isCurrentPath('/profile')">
+                マイプロフィール
               </NavLink>
             </li>
           </template>

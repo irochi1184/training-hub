@@ -92,8 +92,8 @@ class SubmissionTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page->component('Submissions/Show'));
     }
 
-    /** 同じテストを2回受験しようとすると既存の提出画面にリダイレクトされる */
-    public function test_受験済みのテストを再度受験しようとするとリダイレクトされる(): void
+    /** 同じテストを2回受験しようとすると404になる（受験中のsubmissionがないため） */
+    public function test_受験済みのテストを再度受験しようとすると404になる(): void
     {
         $student = User::factory()->student()->create();
         $curriculum = Curriculum::factory()->create();
@@ -101,21 +101,20 @@ class SubmissionTest extends TestCase
 
         [$test, $question, $correctChoice] = $this->createTestWithQuestions($curriculum);
 
-        // 受験済みの提出を作成する
-        $submission = Submission::factory()->submitted()->create([
+        // 受験済みの提出を作成する（max_attempts=null → 再受験不可）
+        Submission::factory()->submitted()->create([
             'test_id' => $test->id,
             'user_id' => $student->id,
         ]);
 
-        // 再提出を試みる（Policy: create は未受験のみ許可）
+        // 再提出を試みる（受験中のsubmissionがないため404）
         $response = $this->actingAs($student)->post("/tests/{$test->id}/submissions", [
             'answers' => [
                 ['question_id' => $question->id, 'choice_id' => $correctChoice->id],
             ],
         ]);
 
-        // 既存の提出ページにリダイレクトされる
-        $response->assertRedirect(route('submissions.show', $submission));
+        $response->assertNotFound();
     }
 
     /** 受験済みのテスト受験画面(GET)にアクセスすると結果ページへリダイレクトされる */
@@ -163,5 +162,116 @@ class SubmissionTest extends TestCase
 
         // 提出レコードが増えていないこと
         $this->assertDatabaseCount('submissions', 1);
+    }
+
+    /** max_attempts=3 のテストで再受験できる */
+    public function test_再受験可能なテストで制限内なら再受験できる(): void
+    {
+        $student = User::factory()->student()->create();
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
+
+        [$test, $question, $correctChoice] = $this->createTestWithQuestions($curriculum);
+        $test->update(['max_attempts' => 3]);
+
+        // 1回目の提出済み
+        Submission::factory()->submitted()->create([
+            'test_id' => $test->id,
+            'user_id' => $student->id,
+            'attempt' => 1,
+            'score' => 0,
+        ]);
+
+        // 再受験画面にアクセスできる
+        $response = $this->actingAs($student)->get("/tests/{$test->id}/take");
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page->component('Tests/Take'));
+
+        // attempt=2 の提出が作成される
+        $this->assertDatabaseHas('submissions', [
+            'test_id' => $test->id,
+            'user_id' => $student->id,
+            'attempt' => 2,
+        ]);
+    }
+
+    /** max_attempts の上限に達すると再受験できない */
+    public function test_上限に達すると再受験できない(): void
+    {
+        $student = User::factory()->student()->create();
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
+
+        [$test] = $this->createTestWithQuestions($curriculum);
+        $test->update(['max_attempts' => 2]);
+
+        // 2回分の提出済み
+        Submission::factory()->submitted()->create([
+            'test_id' => $test->id,
+            'user_id' => $student->id,
+            'attempt' => 1,
+        ]);
+        Submission::factory()->submitted()->create([
+            'test_id' => $test->id,
+            'user_id' => $student->id,
+            'attempt' => 2,
+        ]);
+
+        // 再受験画面にアクセスすると403
+        $response = $this->actingAs($student)->get("/tests/{$test->id}/take");
+        $response->assertForbidden();
+    }
+
+    /** max_attempts=0 は無制限に再受験できる */
+    public function test_無制限再受験ができる(): void
+    {
+        $student = User::factory()->student()->create();
+        $curriculum = Curriculum::factory()->create();
+        Enrollment::factory()->create(['user_id' => $student->id, 'curriculum_id' => $curriculum->id]);
+
+        [$test] = $this->createTestWithQuestions($curriculum);
+        $test->update(['max_attempts' => 0]);
+
+        // 5回分の提出済み
+        for ($i = 1; $i <= 5; $i++) {
+            Submission::factory()->submitted()->create([
+                'test_id' => $test->id,
+                'user_id' => $student->id,
+                'attempt' => $i,
+            ]);
+        }
+
+        // まだ受験できる
+        $response = $this->actingAs($student)->get("/tests/{$test->id}/take");
+        $response->assertStatus(200);
+    }
+
+    /** 結果画面で受験履歴が表示される */
+    public function test_結果画面で受験履歴と最高点が返される(): void
+    {
+        $student = User::factory()->student()->create();
+        $curriculum = Curriculum::factory()->create();
+        [$test] = $this->createTestWithQuestions($curriculum);
+
+        $sub1 = Submission::factory()->submitted()->create([
+            'test_id' => $test->id,
+            'user_id' => $student->id,
+            'attempt' => 1,
+            'score' => 3,
+        ]);
+        $sub2 = Submission::factory()->submitted()->create([
+            'test_id' => $test->id,
+            'user_id' => $student->id,
+            'attempt' => 2,
+            'score' => 8,
+        ]);
+
+        $response = $this->actingAs($student)->get("/submissions/{$sub2->id}");
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Submissions/Show')
+            ->has('allAttempts', 2)
+            ->where('bestScore', 8)
+        );
     }
 }

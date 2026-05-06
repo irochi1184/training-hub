@@ -287,6 +287,43 @@
           </template>
         </DataTable>
       </div>
+
+      <!-- タブコンテンツ: プロフィール -->
+      <div v-else-if="activeTab === 'profile'">
+        <div v-if="!student.student_profile" class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-8 text-center">
+          <p class="text-sm text-slate-400">プロフィールが設定されていません</p>
+        </div>
+
+        <div v-else class="space-y-5">
+          <section class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
+            <h2 class="text-sm font-semibold text-slate-700 mb-3">自己紹介</h2>
+            <p v-if="student.student_profile.bio" class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed">{{ student.student_profile.bio }}</p>
+            <p v-else class="text-sm text-slate-400">未設定</p>
+          </section>
+
+          <section class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
+            <h2 class="text-sm font-semibold text-slate-700 mb-3">学習目標</h2>
+            <p v-if="student.student_profile.learning_goal" class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed">{{ student.student_profile.learning_goal }}</p>
+            <p v-else class="text-sm text-slate-400">未設定</p>
+          </section>
+
+          <section class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
+            <h2 class="text-sm font-semibold text-slate-700 mb-3">スキル</h2>
+            <div v-if="student.student_profile.skills && student.student_profile.skills.length > 0" class="flex flex-wrap gap-2">
+              <span
+                v-for="skill in student.student_profile.skills"
+                :key="skill.skill_name"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm"
+                :class="skillBadgeClass(skill.level)"
+              >
+                {{ skill.skill_name }}
+                <span class="text-xs opacity-75">{{ levelLabel(skill.level) }}</span>
+              </span>
+            </div>
+            <p v-else class="text-sm text-slate-400">未設定</p>
+          </section>
+        </div>
+      </div>
     </div>
   </AppLayout>
 </template>
@@ -302,6 +339,7 @@ import type {
   RiskAlert,
   UnderstandingTrendItem,
   TestSummary,
+  StudentProfile,
 } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
@@ -311,7 +349,7 @@ import { formatDate, formatDateTime } from '@/utils/formatDate';
 import { understandingBarClass } from '@/utils/understandingLevel';
 
 const props = defineProps<{
-  student: User;
+  student: User & { student_profile?: StudentProfile | null };
   enrollments: Enrollment[];
   dailyReports: DailyReport[];
   submissions: Submission[];
@@ -320,14 +358,28 @@ const props = defineProps<{
   testSummary: TestSummary;
 }>();
 
-type TabKey = 'reports' | 'submissions' | 'alerts';
+type TabKey = 'reports' | 'submissions' | 'alerts' | 'profile';
 const activeTab = ref<TabKey>('reports');
 
 const tabs: { key: TabKey; label: string; count?: number }[] = [
   { key: 'reports', label: '日報一覧', count: props.dailyReports.length },
   { key: 'submissions', label: 'テスト結果', count: props.submissions.length },
   { key: 'alerts', label: '要注意アラート', count: props.riskAlerts.length },
+  { key: 'profile', label: 'プロフィール' },
 ];
+
+function levelLabel(level: number): string {
+  const labels: Record<number, string> = { 1: '初級', 2: '中級', 3: '上級' };
+  return labels[level] ?? '';
+}
+
+function skillBadgeClass(level: number): string {
+  switch (level) {
+    case 3: return 'bg-indigo-100 text-indigo-800';
+    case 2: return 'bg-emerald-100 text-emerald-800';
+    default: return 'bg-slate-100 text-slate-700';
+  }
+}
 
 const latestEnrollment = computed(() => props.enrollments[0]);
 
