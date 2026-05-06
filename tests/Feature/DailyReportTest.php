@@ -161,7 +161,8 @@ class DailyReportTest extends TestCase
         $instructor = User::factory()->instructor()->create();
 
         // 担当カリキュラム — この日報は表示される
-        $ownCurriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $ownCurriculum = Curriculum::factory()->create();
+        $ownCurriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         DailyReport::factory()->create(['curriculum_id' => $ownCurriculum->id]);
 
         // 担当外カリキュラム — この日報は表示されない

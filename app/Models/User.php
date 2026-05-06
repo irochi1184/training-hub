@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -59,9 +60,11 @@ class User extends Authenticatable
         return $this->hasMany(DailyReportComment::class);
     }
 
-    public function instructedCurricula(): HasMany
+    public function instructedCurricula(): BelongsToMany
     {
-        return $this->hasMany(Curriculum::class, 'instructor_id');
+        return $this->belongsToMany(Curriculum::class, 'curriculum_instructors')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function submissions(): HasMany

@@ -19,7 +19,7 @@ class RiskAlertPolicy
         }
 
         if ($user->isInstructor()) {
-            return $alert->curriculum->instructor_id === $user->id;
+            return $alert->curriculum->hasInstructor($user->id);
         }
 
         return false;

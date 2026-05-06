@@ -81,7 +81,7 @@ class HandleInertiaRequests extends Middleware
                     });
             });
         } elseif ($user->isInstructor()) {
-            $curriculumIds = $user->instructedCurricula()->pluck('id');
+            $curriculumIds = $user->instructedCurricula()->pluck('curricula.id');
             $query->where(function ($q) use ($user, $curriculumIds) {
                 $q->where('target_type', AnnouncementTargetType::All)
                     ->orWhere(function ($q2) use ($curriculumIds) {
@@ -114,7 +114,7 @@ class HandleInertiaRequests extends Middleware
         $query = RiskAlert::whereNull('resolved_at');
 
         if ($user->isInstructor()) {
-            $curriculumIds = $user->instructedCurricula()->pluck('id');
+            $curriculumIds = $user->instructedCurricula()->pluck('curricula.id');
             $query->whereIn('curriculum_id', $curriculumIds);
         }
 

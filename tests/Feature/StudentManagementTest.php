@@ -28,7 +28,8 @@ class StudentManagementTest extends TestCase
     public function test_instructorが担当カリキュラムの受講生を閲覧できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         User::factory()->student()->count(3)->create()->each(function (User $student) use ($curriculum) {
             Enrollment::factory()->create([
                 'user_id' => $student->id,

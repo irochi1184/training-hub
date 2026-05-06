@@ -21,7 +21,8 @@ class TestManagementTest extends TestCase
     public function test_instructorがテストを作成できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
 
         $response = $this->actingAs($instructor)->post('/tests', [
             'curriculum_id' => $curriculum->id,
@@ -68,7 +69,8 @@ class TestManagementTest extends TestCase
     public function test_受験者がいるテストは更新できない(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
 
         // 受験者を作成する
@@ -96,7 +98,8 @@ class TestManagementTest extends TestCase
     public function test_受験者がいないテストは更新できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($instructor)->put("/tests/{$test->id}", [
@@ -150,7 +153,8 @@ class TestManagementTest extends TestCase
     public function test_instructorがテストを削除できる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($instructor)->delete("/tests/{$test->id}");
@@ -163,7 +167,8 @@ class TestManagementTest extends TestCase
     public function test_受験者がいるテストは削除できない(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
 
         // 受験者を作成する
@@ -220,7 +225,8 @@ class TestManagementTest extends TestCase
     public function test_担当instructorがテスト分析画面にアクセスできる(): void
     {
         $instructor = User::factory()->instructor()->create();
-        $curriculum = Curriculum::factory()->create(['instructor_id' => $instructor->id]);
+        $curriculum = Curriculum::factory()->create();
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
         $test = Test::factory()->create(['curriculum_id' => $curriculum->id]);
 
         $response = $this->actingAs($instructor)->get("/tests/{$test->id}/analytics");

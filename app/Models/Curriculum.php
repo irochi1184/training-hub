@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\CurriculumInstructorRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -16,7 +18,6 @@ class Curriculum extends Model
 
     protected $fillable = [
         'organization_id',
-        'instructor_id',
         'name',
         'starts_on',
         'ends_on',
@@ -35,9 +36,31 @@ class Curriculum extends Model
         return $this->belongsTo(Organization::class);
     }
 
-    public function instructor(): BelongsTo
+    public function instructors(): BelongsToMany
     {
-        return $this->belongsTo(User::class, 'instructor_id');
+        return $this->belongsToMany(User::class, 'curriculum_instructors')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    public function mainInstructors(): BelongsToMany
+    {
+        return $this->instructors()->wherePivot('role', CurriculumInstructorRole::Main->value);
+    }
+
+    public function subInstructors(): BelongsToMany
+    {
+        return $this->instructors()->wherePivot('role', CurriculumInstructorRole::Sub->value);
+    }
+
+    public function hasInstructor(int $userId): bool
+    {
+        return $this->instructors()->where('users.id', $userId)->exists();
+    }
+
+    public function curriculumInstructors(): HasMany
+    {
+        return $this->hasMany(CurriculumInstructor::class);
     }
 
     public function enrollments(): HasMany

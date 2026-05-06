@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CurriculumInstructorRole;
 use App\Enums\UserRole;
 use App\Http\Requests\StoreCurriculumRequest;
 use App\Http\Requests\UpdateCurriculumRequest;
@@ -17,7 +18,7 @@ class CurriculumController extends Controller
     {
         $this->authorize('viewAny', Curriculum::class);
 
-        $curricula = Curriculum::with('instructor:id,name')
+        $curricula = Curriculum::with(['mainInstructors:id,name', 'subInstructors:id,name'])
             ->withCount(['enrollments', 'tests'])
             ->orderByDesc('starts_on')
             ->paginate(20);
@@ -40,13 +41,14 @@ class CurriculumController extends Controller
 
         $validated = $request->validated();
 
-        Curriculum::create([
+        $curriculum = Curriculum::create([
             'organization_id' => $request->user()->organization_id,
-            'instructor_id' => $validated['instructor_id'],
             'name' => $validated['name'],
             'starts_on' => $validated['starts_on'],
             'ends_on' => $validated['ends_on'],
         ]);
+
+        $this->syncInstructors($curriculum, $validated);
 
         return redirect()->route('curricula.index')->with('success', 'カリキュラムを作成しました');
     }
@@ -54,6 +56,8 @@ class CurriculumController extends Controller
     public function edit(Curriculum $curriculum): Response
     {
         $this->authorize('update', $curriculum);
+
+        $curriculum->load(['mainInstructors:id,name', 'subInstructors:id,name']);
 
         return Inertia::render('Curricula/Edit', [
             'curriculum' => $curriculum,
@@ -65,7 +69,15 @@ class CurriculumController extends Controller
     {
         $this->authorize('update', $curriculum);
 
-        $curriculum->update($request->validated());
+        $validated = $request->validated();
+
+        $curriculum->update([
+            'name' => $validated['name'],
+            'starts_on' => $validated['starts_on'],
+            'ends_on' => $validated['ends_on'],
+        ]);
+
+        $this->syncInstructors($curriculum, $validated);
 
         return redirect()->route('curricula.index')->with('success', 'カリキュラムを更新しました');
     }
@@ -79,9 +91,22 @@ class CurriculumController extends Controller
         return redirect()->route('curricula.index')->with('success', 'カリキュラムを削除しました');
     }
 
-    /**
-     * @return \Illuminate\Support\Collection<int, User>
-     */
+    private function syncInstructors(Curriculum $curriculum, array $validated): void
+    {
+        $syncData = [];
+
+        foreach ($validated['main_instructor_ids'] ?? [] as $id) {
+            $syncData[$id] = ['role' => CurriculumInstructorRole::Main->value];
+        }
+
+        foreach ($validated['sub_instructor_ids'] ?? [] as $id) {
+            $syncData[$id] = ['role' => CurriculumInstructorRole::Sub->value];
+        }
+
+        $curriculum->instructors()->sync($syncData);
+    }
+
+    /** @return \Illuminate\Support\Collection<int, User> */
     private function instructorOptions(): \Illuminate\Support\Collection
     {
         return User::where('role', UserRole::Instructor)

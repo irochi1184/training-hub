@@ -93,8 +93,8 @@ class AnnouncementTest extends TestCase
         $instructor = User::factory()->instructor()->create();
         $curriculum = Curriculum::factory()->create([
             'organization_id' => $instructor->organization_id,
-            'instructor_id' => $instructor->id,
         ]);
+        $curriculum->instructors()->syncWithoutDetaching([$instructor->id => ['role' => 'main']]);
 
         $response = $this->actingAs($instructor)->post('/announcements', [
             'title' => '講師からのお知らせ',

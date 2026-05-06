@@ -35,7 +35,19 @@
             class="hover:bg-slate-50 transition-colors"
           >
             <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ curriculum.name }}</td>
-            <td class="px-4 py-3 text-sm text-slate-600">{{ curriculum.instructor?.name ?? '—' }}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">
+              <div v-if="(curriculum.main_instructors ?? []).length > 0 || (curriculum.sub_instructors ?? []).length > 0">
+                <div>
+                  <span class="text-xs font-medium text-slate-500">メイン:</span>
+                  {{ (curriculum.main_instructors ?? []).map(i => i.name).join('、') || '—' }}
+                </div>
+                <div v-if="(curriculum.sub_instructors ?? []).length > 0" class="text-xs text-slate-400 mt-0.5">
+                  <span class="font-medium">サブ:</span>
+                  {{ curriculum.sub_instructors!.map(i => i.name).join('、') }}
+                </div>
+              </div>
+              <span v-else class="text-slate-400">—</span>
+            </td>
             <td class="px-4 py-3 text-xs text-slate-500">
               {{ formatDate(curriculum.starts_on) }} 〜 {{ formatDate(curriculum.ends_on) }}
             </td>

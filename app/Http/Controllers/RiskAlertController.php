@@ -23,7 +23,7 @@ class RiskAlertController extends Controller
             ->orderByDesc('created_at');
 
         $curriculumIds = $user->isInstructor()
-            ? $user->instructedCurricula()->pluck('id')
+            ? $user->instructedCurricula()->pluck('curricula.id')
             : null;
 
         if ($curriculumIds !== null) {

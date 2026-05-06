@@ -42,12 +42,14 @@ defineProps<{
 
 const form = useForm<{
   name: string;
-  instructor_id: number | '';
+  main_instructor_ids: number[];
+  sub_instructor_ids: number[];
   starts_on: string;
   ends_on: string;
 }>({
   name: '',
-  instructor_id: '',
+  main_instructor_ids: [],
+  sub_instructor_ids: [],
   starts_on: '',
   ends_on: '',
 });

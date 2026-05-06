@@ -144,7 +144,7 @@ class TestController extends Controller
                     ->orWhere('closes_at', '>=', $now)
                 );
         } elseif ($user->isInstructor()) {
-            $curriculumIds = $user->instructedCurricula()->pluck('id');
+            $curriculumIds = $user->instructedCurricula()->pluck('curricula.id');
             $query->whereIn('curriculum_id', $curriculumIds);
         }
 

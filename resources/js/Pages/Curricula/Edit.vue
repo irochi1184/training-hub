@@ -44,12 +44,14 @@ const props = defineProps<{
 
 const form = useForm<{
   name: string;
-  instructor_id: number | '';
+  main_instructor_ids: number[];
+  sub_instructor_ids: number[];
   starts_on: string;
   ends_on: string;
 }>({
   name: props.curriculum.name,
-  instructor_id: props.curriculum.instructor_id,
+  main_instructor_ids: (props.curriculum.main_instructors ?? []).map(i => i.id),
+  sub_instructor_ids: (props.curriculum.sub_instructors ?? []).map(i => i.id),
   starts_on: props.curriculum.starts_on,
   ends_on: props.curriculum.ends_on,
 });
