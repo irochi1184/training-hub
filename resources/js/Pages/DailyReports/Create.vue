@@ -8,43 +8,24 @@
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6 space-y-5">
           <h2 class="text-sm font-semibold text-slate-700">基本情報</h2>
 
-          <div>
-            <label for="curriculum_id" class="block text-sm font-medium text-slate-700 mb-1">
-              カリキュラム <span class="text-red-500">*</span>
-            </label>
-            <select
-              id="curriculum_id"
-              v-model="form.curriculum_id"
-              required
-              class="block w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:ring-1 focus:outline-none transition-colors"
-              :class="form.errors.curriculum_id
-                ? 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500'"
-            >
-              <option value="" disabled>選択してください</option>
-              <option v-for="curriculum in curricula" :key="curriculum.id" :value="curriculum.id">
-                {{ curriculum.name }}
-              </option>
-            </select>
-            <p v-if="form.errors.curriculum_id" class="mt-1 text-xs text-red-600">{{ form.errors.curriculum_id }}</p>
-          </div>
+          <FormSelect
+            id="curriculum_id"
+            label="カリキュラム"
+            :required="true"
+            v-model="form.curriculum_id"
+            :options="curriculumOptions"
+            placeholder="選択してください"
+            :error="form.errors.curriculum_id"
+          />
 
-          <div>
-            <label for="reported_on" class="block text-sm font-medium text-slate-700 mb-1">
-              日付 <span class="text-red-500">*</span>
-            </label>
-            <input
-              id="reported_on"
-              v-model="form.reported_on"
-              type="date"
-              required
-              class="block w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:ring-1 focus:outline-none transition-colors"
-              :class="form.errors.reported_on
-                ? 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500'"
-            />
-            <p v-if="form.errors.reported_on" class="mt-1 text-xs text-red-600">{{ form.errors.reported_on }}</p>
-          </div>
+          <FormInput
+            id="reported_on"
+            label="日付"
+            type="date"
+            :required="true"
+            v-model="form.reported_on"
+            :error="form.errors.reported_on"
+          />
         </div>
 
         <!-- 理解度 -->
@@ -83,42 +64,30 @@
 
         <!-- 学習内容 -->
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
-          <div>
-            <label for="content" class="block text-sm font-medium text-slate-700 mb-1">
-              学習内容 <span class="text-red-500">*</span>
-            </label>
-            <p class="text-xs text-slate-500 mb-2">本日学習した内容を具体的に記述してください</p>
-            <textarea
-              id="content"
-              v-model="form.content"
-              rows="6"
-              required
-              placeholder="例: HTTPメソッド（GET / POST / PUT / DELETE）の違いを学んだ。RESTful APIの設計原則について..."
-              class="block w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:ring-1 focus:outline-none transition-colors resize-y"
-              :class="form.errors.content
-                ? 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500'"
-            />
-            <p v-if="form.errors.content" class="mt-1 text-xs text-red-600">{{ form.errors.content }}</p>
-          </div>
+          <FormTextarea
+            id="content"
+            label="学習内容"
+            :required="true"
+            hint="本日学習した内容を具体的に記述してください"
+            v-model="form.content"
+            :rows="6"
+            placeholder="例: HTTPメソッド（GET / POST / PUT / DELETE）の違いを学んだ。RESTful APIの設計原則について..."
+            :error="form.errors.content"
+          />
         </div>
 
         <!-- 感想・気づき（任意） -->
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
-          <div>
-            <label for="impression" class="block text-sm font-medium text-slate-700 mb-1">
-              感想・気づき <span class="text-xs text-slate-400 font-normal">（任意）</span>
-            </label>
-            <p class="text-xs text-slate-500 mb-2">疑問点や今後取り組みたいことなどを自由に記述してください</p>
-            <textarea
-              id="impression"
-              v-model="form.impression"
-              rows="4"
-              placeholder="例: REST APIの設計でURLの命名が難しいと感じた。次回は実際にAPIを叩いて..."
-              class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors resize-y"
-            />
-            <p v-if="form.errors.impression" class="mt-1 text-xs text-red-600">{{ form.errors.impression }}</p>
-          </div>
+          <FormTextarea
+            id="impression"
+            label="感想・気づき"
+            :optional="true"
+            hint="疑問点や今後取り組みたいことなどを自由に記述してください"
+            v-model="form.impression"
+            :rows="4"
+            placeholder="例: REST APIの設計でURLの命名が難しいと感じた。次回は実際にAPIを叩いて..."
+            :error="form.errors.impression"
+          />
         </div>
 
         <!-- 提出ボタン -->
@@ -143,14 +112,22 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import type { Curriculum } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import FormInput from '@/Components/FormInput.vue';
+import FormSelect from '@/Components/FormSelect.vue';
+import FormTextarea from '@/Components/FormTextarea.vue';
 
 const props = defineProps<{
   curricula: Curriculum[];
   today: string; // 'YYYY-MM-DD'
 }>();
+
+const curriculumOptions = computed(() =>
+  props.curricula.map((c) => ({ value: c.id, label: c.name })),
+);
 
 const understandingOptions = [
   {

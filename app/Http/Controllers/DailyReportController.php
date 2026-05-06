@@ -21,8 +21,11 @@ class DailyReportController extends Controller
         $query = DailyReport::with(['user', 'curriculum', 'comments.user'])
             ->orderByDesc('reported_on');
 
-        if ($user->isInstructor()) {
-            $curriculumIds = $user->instructedCurricula()->pluck('id');
+        $curriculumIds = $user->isInstructor()
+            ? $user->instructedCurricula()->pluck('id')
+            : null;
+
+        if ($curriculumIds !== null) {
             $query->whereIn('curriculum_id', $curriculumIds);
         }
 
@@ -41,8 +44,8 @@ class DailyReportController extends Controller
         $reports = $query->paginate(30)->withQueryString();
 
         $curriculaQuery = Curriculum::orderBy('name');
-        if ($user->isInstructor()) {
-            $curriculaQuery->whereIn('id', $user->instructedCurricula()->pluck('id'));
+        if ($curriculumIds !== null) {
+            $curriculaQuery->whereIn('id', $curriculumIds);
         }
         $curricula = $curriculaQuery->get();
 
