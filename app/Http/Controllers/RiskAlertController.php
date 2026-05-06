@@ -22,8 +22,11 @@ class RiskAlertController extends Controller
         $query = RiskAlert::with(['user', 'curriculum'])
             ->orderByDesc('created_at');
 
-        if ($user->isInstructor()) {
-            $curriculumIds = $user->instructedCurricula()->pluck('id');
+        $curriculumIds = $user->isInstructor()
+            ? $user->instructedCurricula()->pluck('id')
+            : null;
+
+        if ($curriculumIds !== null) {
             $query->whereIn('curriculum_id', $curriculumIds);
         }
 
@@ -47,8 +50,8 @@ class RiskAlertController extends Controller
         $alerts = $query->paginate(30)->withQueryString();
 
         $curriculaQuery = Curriculum::orderBy('name');
-        if ($user->isInstructor()) {
-            $curriculaQuery->whereIn('id', $user->instructedCurricula()->pluck('id'));
+        if ($curriculumIds !== null) {
+            $curriculaQuery->whereIn('id', $curriculumIds);
         }
 
         return Inertia::render('RiskAlerts/Index', [

@@ -14,6 +14,7 @@ class Submission extends Model
     protected $fillable = [
         'test_id',
         'user_id',
+        'attempt',
         'started_at',
         'submitted_at',
         'score',

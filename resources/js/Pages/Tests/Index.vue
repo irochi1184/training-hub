@@ -17,8 +17,8 @@
 
       <DataTable
         :empty="tests.data.length === 0"
-        empty-message="テストがありません"
-        :col-span="canCreate ? 7 : 6"
+        empty-message="テストがまだ作成されていません"
+        :col-span="canCreate ? 7 : (isStudent ? 7 : 6)"
       >
         <template #head>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">タイトル</th>
@@ -26,6 +26,7 @@
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">問題数</th>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">公開期間</th>
           <th v-if="canCreate" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">受験者数</th>
+          <th v-if="isStudent" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">成績</th>
           <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">状態</th>
           <th class="px-4 py-3"></th>
         </template>
@@ -49,18 +50,28 @@
             <td v-if="canCreate" class="px-4 py-3 text-sm text-slate-600">
               {{ test.submissions_count ?? 0 }} 名
             </td>
+            <td v-if="isStudent" class="px-4 py-3 text-sm text-slate-600">
+              <template v-if="(test.my_attempts ?? 0) > 0">
+                <span class="font-medium">{{ test.my_best_score }}点</span>
+                <span class="text-xs text-slate-400 ml-1">({{ test.my_attempts }}回目{{ attemptsInfo(test) }})</span>
+              </template>
+              <span v-else class="text-slate-400">—</span>
+            </td>
             <td class="px-4 py-3">
               <StatusBadge :color="testStatusColor(test)" :label="testStatusLabel(test)" />
             </td>
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
-                <Link
-                  v-if="isStudent && isAvailable(test)"
-                  :href="`/tests/${test.id}/take`"
-                  class="text-sm font-medium text-white bg-indigo-600 px-3 py-1.5 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors"
-                >
-                  受験する
-                </Link>
+                <template v-if="isStudent && isAvailable(test)">
+                  <Link
+                    v-if="canTake(test)"
+                    :href="`/tests/${test.id}/take`"
+                    class="text-sm font-medium text-white bg-indigo-600 px-3 py-1.5 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors"
+                  >
+                    {{ (test.my_attempts ?? 0) > 0 ? '再受験' : '受験する' }}
+                  </Link>
+                  <span v-else class="text-xs text-slate-400">受験済み</span>
+                </template>
 
                 <!-- admin/instructor: 編集・削除（受験者がいると編集も削除も不可） -->
                 <template v-if="canCreate">
@@ -100,6 +111,18 @@
               </div>
             </td>
           </tr>
+        </template>
+
+        <template v-if="canCreate" #empty-action>
+          <Link
+            href="/tests/create"
+            class="mt-2 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            最初のテストを作成
+          </Link>
         </template>
       </DataTable>
 
@@ -142,6 +165,18 @@ function isAvailable(test: Test): boolean {
   if (test.opens_at && new Date(test.opens_at) > now) return false;
   if (test.closes_at && new Date(test.closes_at) < now) return false;
   return true;
+}
+
+function canTake(test: Test): boolean {
+  // remaining_attempts: null=無制限、0=残りなし、>0=残りあり
+  if (test.remaining_attempts === 0) return false;
+  return true;
+}
+
+function attemptsInfo(test: Test): string {
+  if (test.remaining_attempts === null) return '';
+  if (test.remaining_attempts === 0) return ' / 上限';
+  return ` / 残${test.remaining_attempts}回`;
 }
 
 function testStatusColor(test: Test): 'green' | 'yellow' | 'gray' {

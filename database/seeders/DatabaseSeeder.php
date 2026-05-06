@@ -13,6 +13,8 @@ use App\Models\Enrollment;
 use App\Models\Organization;
 use App\Models\Question;
 use App\Models\RiskAlert;
+use App\Models\StudentProfile;
+use App\Models\StudentSkill;
 use App\Models\Submission;
 use App\Models\Test;
 use App\Models\User;
@@ -132,6 +134,7 @@ class DatabaseSeeder extends Seeder
         $questionsData = [
             [
                 'body' => 'HTMLでリストを作成するタグはどれですか？',
+                'question_type' => 'single',
                 'score' => 1,
                 'choices' => [
                     ['body' => '<list>', 'is_correct' => false],
@@ -142,6 +145,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'body' => 'HTMLの文書型宣言を表すものはどれですか？',
+                'question_type' => 'single',
                 'score' => 1,
                 'choices' => [
                     ['body' => '<!DOCTYPE html>', 'is_correct' => true],
@@ -152,6 +156,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'body' => 'リンクを作成するHTMLタグはどれですか？',
+                'question_type' => 'single',
                 'score' => 1,
                 'choices' => [
                     ['body' => '<link>', 'is_correct' => false],
@@ -162,6 +167,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'body' => '画像を表示するHTMLタグはどれですか？',
+                'question_type' => 'single',
                 'score' => 1,
                 'choices' => [
                     ['body' => '<image>', 'is_correct' => false],
@@ -172,12 +178,24 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'body' => 'HTMLで表を作成するタグはどれですか？',
+                'question_type' => 'single',
                 'score' => 2,
                 'choices' => [
                     ['body' => '<table>', 'is_correct' => true],
                     ['body' => '<grid>', 'is_correct' => false],
                     ['body' => '<row>', 'is_correct' => false],
                     ['body' => '<list>', 'is_correct' => false],
+                ],
+            ],
+            [
+                'body' => 'HTMLのブロック要素をすべて選んでください（複数選択）',
+                'question_type' => 'multiple',
+                'score' => 2,
+                'choices' => [
+                    ['body' => '<div>', 'is_correct' => true],
+                    ['body' => '<span>', 'is_correct' => false],
+                    ['body' => '<p>', 'is_correct' => true],
+                    ['body' => '<a>', 'is_correct' => false],
                 ],
             ],
         ];
@@ -187,6 +205,7 @@ class DatabaseSeeder extends Seeder
             $question = Question::create([
                 'test_id' => $test->id,
                 'body' => $questionData['body'],
+                'question_type' => $questionData['question_type'] ?? 'single',
                 'position' => $position + 1,
                 'score' => $questionData['score'],
             ]);
@@ -217,28 +236,67 @@ class DatabaseSeeder extends Seeder
             foreach ($questions as $questionData) {
                 $question = $questionData['question'];
                 $choices = $questionData['choices'];
-                $correctChoice = $choices->firstWhere('is_correct', true);
 
-                $selectedChoice = $question->position === 1
-                    ? $choices->firstWhere('is_correct', false)
-                    : $correctChoice;
-
-                $isCorrect = $selectedChoice?->is_correct ?? false;
-
-                Answer::create([
-                    'submission_id' => $submission->id,
-                    'question_id' => $question->id,
-                    'choice_id' => $selectedChoice?->id,
-                    'is_correct' => $isCorrect,
-                ]);
-
-                if ($isCorrect) {
+                if ($question->question_type === 'multiple') {
+                    // 複数選択: 正解をすべて選択
+                    $correctChoices = $choices->where('is_correct', true);
+                    $isCorrect = true;
+                    foreach ($correctChoices as $choice) {
+                        Answer::create([
+                            'submission_id' => $submission->id,
+                            'question_id' => $question->id,
+                            'choice_id' => $choice->id,
+                            'is_correct' => true,
+                        ]);
+                    }
                     $totalScore += $question->score;
+                } else {
+                    // 単一選択
+                    $correctChoice = $choices->firstWhere('is_correct', true);
+                    $selectedChoice = $question->position === 1
+                        ? $choices->firstWhere('is_correct', false)
+                        : $correctChoice;
+
+                    $isCorrect = $selectedChoice?->is_correct ?? false;
+
+                    Answer::create([
+                        'submission_id' => $submission->id,
+                        'question_id' => $question->id,
+                        'choice_id' => $selectedChoice?->id,
+                        'is_correct' => $isCorrect,
+                    ]);
+
+                    if ($isCorrect) {
+                        $totalScore += $question->score;
+                    }
                 }
             }
 
             $submission->update(['score' => $totalScore]);
         }
+
+        // 再受験可能テスト（max_attempts=3）
+        $retakeTest = Test::create([
+            'curriculum_id' => $curriculum1->id,
+            'created_by' => $instructor1->id,
+            'title' => 'CSS基礎テスト（再受験可）',
+            'description' => '再受験が3回まで可能なテストです',
+            'time_limit_minutes' => null,
+            'opens_at' => null,
+            'closes_at' => null,
+            'max_attempts' => 3,
+        ]);
+
+        $retakeQ = Question::create([
+            'test_id' => $retakeTest->id,
+            'body' => 'CSSでテキストの色を変えるプロパティはどれですか？',
+            'question_type' => 'single',
+            'position' => 1,
+            'score' => 1,
+        ]);
+        Choice::create(['question_id' => $retakeQ->id, 'body' => 'color', 'is_correct' => true, 'position' => 1]);
+        Choice::create(['question_id' => $retakeQ->id, 'body' => 'text-color', 'is_correct' => false, 'position' => 2]);
+        Choice::create(['question_id' => $retakeQ->id, 'body' => 'font-color', 'is_correct' => false, 'position' => 3]);
 
         RiskAlert::create([
             'user_id' => $students->get(0)->id,
@@ -246,6 +304,28 @@ class DatabaseSeeder extends Seeder
             'reason' => RiskAlertReason::LowUnderstanding->value,
             'detail' => '理解度平均: 2.0',
             'resolved_at' => null,
+        ]);
+
+        // プロフィールデータ
+        $profile1 = StudentProfile::create([
+            'user_id' => $students->get(0)->id,
+            'bio' => 'プログラミング初心者です。IT業界への転職を目指しています。',
+            'learning_goal' => '3ヶ月以内にWebアプリを一人で作れるようになる',
+        ]);
+        StudentSkill::insert([
+            ['student_profile_id' => $profile1->id, 'skill_name' => 'HTML', 'level' => 2],
+            ['student_profile_id' => $profile1->id, 'skill_name' => 'CSS', 'level' => 1],
+            ['student_profile_id' => $profile1->id, 'skill_name' => 'JavaScript', 'level' => 1],
+        ]);
+
+        $profile2 = StudentProfile::create([
+            'user_id' => $students->get(1)->id,
+            'bio' => '大学で情報工学を学んでいます。実践的なスキルを身につけたいです。',
+            'learning_goal' => 'Laravel でポートフォリオサイトを完成させる',
+        ]);
+        StudentSkill::insert([
+            ['student_profile_id' => $profile2->id, 'skill_name' => 'PHP', 'level' => 2],
+            ['student_profile_id' => $profile2->id, 'skill_name' => 'MySQL', 'level' => 2],
         ]);
 
         // お知らせ

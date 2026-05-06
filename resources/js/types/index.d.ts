@@ -64,17 +64,23 @@ export interface Test {
   time_limit_minutes: number | null;
   opens_at: string | null;
   closes_at: string | null;
+  max_attempts: number | null;
   curriculum?: Curriculum;
   creator?: User;
   questions?: Question[];
   questions_count?: number;
   submissions_count?: number;
+  // 学生向け: 再受験情報
+  my_attempts?: number;
+  my_best_score?: number | null;
+  remaining_attempts?: number | null;
 }
 
 export interface Question {
   id: number;
   test_id: number;
   body: string;
+  question_type: 'single' | 'multiple';
   position: number;
   score: number;
   choices?: Choice[];
@@ -92,12 +98,20 @@ export interface Submission {
   id: number;
   test_id: number;
   user_id: number;
+  attempt: number;
   started_at: string;
   submitted_at: string | null;
   score: number | null;
   test?: Test;
   user?: User;
   answers?: Answer[];
+}
+
+export interface AttemptSummary {
+  id: number;
+  attempt: number;
+  score: number | null;
+  submitted_at: string | null;
 }
 
 export interface Answer {
@@ -192,6 +206,20 @@ export interface AnalyticsSummary {
   max_score: number | null;
   min_score: number | null;
   total_points: number;
+}
+
+export interface StudentSkill {
+  id?: number;
+  skill_name: string;
+  level: 1 | 2 | 3;
+}
+
+export interface StudentProfile {
+  id: number;
+  user_id: number;
+  bio: string | null;
+  learning_goal: string | null;
+  skills?: StudentSkill[];
 }
 
 export interface PaginatedData<T> {

@@ -32,8 +32,11 @@ class StudentController extends Controller
                     ->limit(1),
             ]);
 
-        if ($user->isInstructor()) {
-            $curriculumIds = $user->instructedCurricula()->pluck('id');
+        $curriculumIds = $user->isInstructor()
+            ? $user->instructedCurricula()->pluck('id')
+            : null;
+
+        if ($curriculumIds !== null) {
             $query->whereHas('enrollments', fn ($q) => $q->whereIn('curriculum_id', $curriculumIds));
         }
 
@@ -50,8 +53,8 @@ class StudentController extends Controller
         $students = $query->orderBy('name')->paginate(30)->withQueryString();
 
         $curriculaQuery = Curriculum::orderBy('name');
-        if ($user->isInstructor()) {
-            $curriculaQuery->whereIn('id', $user->instructedCurricula()->pluck('id'));
+        if ($curriculumIds !== null) {
+            $curriculaQuery->whereIn('id', $curriculumIds);
         }
 
         return Inertia::render('Students/Index', [
@@ -70,6 +73,7 @@ class StudentController extends Controller
             'dailyReports' => fn ($q) => $q->with('comments')->orderByDesc('reported_on')->limit(30),
             'submissions' => fn ($q) => $q->with('test')->whereNotNull('submitted_at')->orderByDesc('submitted_at'),
             'riskAlerts' => fn ($q) => $q->orderByDesc('created_at'),
+            'studentProfile.skills',
         ]);
 
         $understandingTrend = $user->dailyReports
