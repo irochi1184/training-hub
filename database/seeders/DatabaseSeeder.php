@@ -274,6 +274,29 @@ class DatabaseSeeder extends Seeder
             $submission->update(['score' => $totalScore]);
         }
 
+        // 再受験可能テスト（max_attempts=3）
+        $retakeTest = Test::create([
+            'curriculum_id' => $curriculum1->id,
+            'created_by' => $instructor1->id,
+            'title' => 'CSS基礎テスト（再受験可）',
+            'description' => '再受験が3回まで可能なテストです',
+            'time_limit_minutes' => null,
+            'opens_at' => null,
+            'closes_at' => null,
+            'max_attempts' => 3,
+        ]);
+
+        $retakeQ = Question::create([
+            'test_id' => $retakeTest->id,
+            'body' => 'CSSでテキストの色を変えるプロパティはどれですか？',
+            'question_type' => 'single',
+            'position' => 1,
+            'score' => 1,
+        ]);
+        Choice::create(['question_id' => $retakeQ->id, 'body' => 'color', 'is_correct' => true, 'position' => 1]);
+        Choice::create(['question_id' => $retakeQ->id, 'body' => 'text-color', 'is_correct' => false, 'position' => 2]);
+        Choice::create(['question_id' => $retakeQ->id, 'body' => 'font-color', 'is_correct' => false, 'position' => 3]);
+
         RiskAlert::create([
             'user_id' => $students->get(0)->id,
             'curriculum_id' => $curriculum1->id,

@@ -27,6 +27,7 @@ class Test extends Model
         'time_limit_minutes',
         'opens_at',
         'closes_at',
+        'max_attempts',
     ];
 
     protected function casts(): array
@@ -34,7 +35,25 @@ class Test extends Model
         return [
             'opens_at' => 'datetime',
             'closes_at' => 'datetime',
+            'max_attempts' => 'integer',
         ];
+    }
+
+    public function allowsRetake(): bool
+    {
+        return $this->max_attempts === null ? false : $this->max_attempts !== 1;
+    }
+
+    public function remainingAttempts(int $userId): ?int
+    {
+        if ($this->max_attempts === null) {
+            return $this->submissions()->where('user_id', $userId)->exists() ? 0 : 1;
+        }
+        if ($this->max_attempts === 0) {
+            return null; // 無制限
+        }
+        $used = $this->submissions()->where('user_id', $userId)->whereNotNull('submitted_at')->count();
+        return max(0, $this->max_attempts - $used);
     }
 
     public function curriculum(): BelongsTo

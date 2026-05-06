@@ -60,18 +60,31 @@
             <p v-if="form.errors.curriculum_id" class="mt-1 text-xs text-red-600">{{ form.errors.curriculum_id }}</p>
           </div>
 
-          <!-- 制限時間・公開期間 -->
-          <div class="grid grid-cols-3 gap-4">
+          <!-- 制限時間・公開期間・受験回数 -->
+          <div class="grid grid-cols-4 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
                 制限時間（分）
-                <span class="text-xs text-slate-400 font-normal">（任意、空欄=無制限）</span>
+                <span class="text-xs text-slate-400 font-normal">（空欄=無制限）</span>
               </label>
               <input
                 v-model.number="form.time_limit_minutes"
                 type="number"
                 min="1"
                 placeholder="例: 30"
+                class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                受験回数上限
+                <span class="text-xs text-slate-400 font-normal">（空欄=1回、0=無制限）</span>
+              </label>
+              <input
+                v-model.number="form.max_attempts"
+                type="number"
+                min="0"
+                placeholder="空欄: 1回のみ"
                 class="block w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
@@ -133,6 +146,7 @@ const form = useForm<{
   description: string;
   curriculum_id: string | number;
   time_limit_minutes: number | null;
+  max_attempts: number | null;
   opens_at: string;
   closes_at: string;
   questions: QuestionForm[];
@@ -141,6 +155,7 @@ const form = useForm<{
   description: '',
   curriculum_id: '',
   time_limit_minutes: null,
+  max_attempts: null,
   opens_at: '',
   closes_at: '',
   questions: [] as QuestionForm[],
