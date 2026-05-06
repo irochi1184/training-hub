@@ -32,3 +32,4 @@ Thumbs.db
 .claude/settings.local.json
 .claude/worktrees/
 /playwright/test-results/
+/test-results/
