@@ -71,7 +71,7 @@ class StudentController extends Controller
         $user->load([
             'enrollments.curriculum',
             'dailyReports' => fn ($q) => $q->with('comments')->orderByDesc('reported_on')->limit(30),
-            'submissions' => fn ($q) => $q->with('test')->whereNotNull('submitted_at')->orderByDesc('submitted_at'),
+            'submissions' => fn ($q) => $q->with('test.questions')->whereNotNull('submitted_at')->orderByDesc('submitted_at'),
             'riskAlerts' => fn ($q) => $q->orderByDesc('created_at'),
             'studentProfile.skills',
         ]);
@@ -95,6 +95,18 @@ class StudentController extends Controller
             'min'     => $scores->isNotEmpty() ? $scores->min() : null,
         ];
 
+        $scoreTrend = $user->submissions
+            ->whereNotNull('submitted_at')
+            ->whereNotNull('score')
+            ->sortBy('submitted_at')
+            ->values()
+            ->map(fn ($s) => [
+                'test_title'   => $s->test?->title ?? '—',
+                'submitted_at' => $s->submitted_at,
+                'score'        => (int) $s->score,
+                'total_points' => $s->test?->questions?->sum('score') ?? 0,
+            ]);
+
         return Inertia::render('Students/Show', [
             'student'            => $user,
             'enrollments'        => $user->enrollments,
@@ -103,6 +115,7 @@ class StudentController extends Controller
             'riskAlerts'         => $user->riskAlerts,
             'understandingTrend' => $understandingTrend,
             'testSummary'        => $testSummary,
+            'scoreTrend'         => $scoreTrend,
         ]);
     }
 }

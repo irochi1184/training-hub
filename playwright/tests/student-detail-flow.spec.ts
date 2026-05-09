@@ -27,6 +27,9 @@ test.describe('受講生詳細フロー', () => {
         // タブが表示される（「日報一覧」「テスト結果」「要注意アラート」+ 件数）
         await expect(page.getByRole('button', { name: /日報一覧/ })).toBeVisible();
         await expect(page.getByRole('button', { name: /テスト結果/ })).toBeVisible();
+
+        // 成績推移グラフが表示される
+        await expect(page.getByText('成績推移')).toBeVisible();
     });
 
     test('instructor が担当受講生の詳細を閲覧できる', async ({ page }) => {
