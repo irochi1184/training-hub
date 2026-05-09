@@ -106,6 +106,11 @@
               <span class="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-widest">組織管理</span>
             </li>
             <li>
+              <NavLink href="/users" :current="isCurrentPath('/users')">
+                ユーザー管理
+              </NavLink>
+            </li>
+            <li>
               <NavLink href="/curricula" :current="isCurrentPath('/curricula')">
                 カリキュラム管理
               </NavLink>
