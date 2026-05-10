@@ -20,6 +20,7 @@ class DashboardController extends Controller
 {
     private const RECENT_RISK_ALERT_LIMIT = 5;
     private const UNDERSTANDING_TREND_DAYS = 7;
+    private const STUDENT_TREND_DAYS = 30;
 
     public function index(Request $request): Response
     {
@@ -137,13 +138,105 @@ class DashboardController extends Controller
             ->orderByDesc('submitted_at')
             ->first();
 
+        // 日報提出率（直近30日）
+        $thirtyDaysAgo = Carbon::today()->subDays(29)->toDateString();
+        $reportCount = $user->dailyReports()
+            ->where('reported_on', '>=', $thirtyDaysAgo)
+            ->count();
+        $reportRate = (int) round(($reportCount / 30) * 100);
+
+        // テスト成績サマリー
+        $submissions = $user->submissions()
+            ->with('test.questions')
+            ->whereNotNull('submitted_at')
+            ->whereNotNull('score')
+            ->get();
+
+        $testAvgScore = $submissions->count() > 0
+            ? round($submissions->avg('score'), 1)
+            : null;
+        $testCount = $submissions->count();
+
+        // 成績推移
+        $scoreTrend = $submissions
+            ->sortBy('submitted_at')
+            ->values()
+            ->map(fn ($s) => [
+                'test_title'   => $s->test?->title ?? '—',
+                'submitted_at' => $s->submitted_at,
+                'score'        => (int) $s->score,
+                'total_points' => $s->test?->questions?->sum('score') ?? 0,
+            ]);
+
+        // カリキュラム別進捗
+        $enrolledCurriculumIds = Enrollment::where('user_id', $user->id)->pluck('curriculum_id');
+        $curricula = Curriculum::whereIn('id', $enrolledCurriculumIds)->get();
+        $curriculumProgress = $curricula->map(function (Curriculum $curriculum) use ($user) {
+            $totalTests = $curriculum->tests()->count();
+            $takenTests = Submission::where('user_id', $user->id)
+                ->whereNotNull('submitted_at')
+                ->whereHas('test', fn ($q) => $q->where('curriculum_id', $curriculum->id))
+                ->distinct('test_id')
+                ->count('test_id');
+            $avgScore = Submission::where('user_id', $user->id)
+                ->whereNotNull('score')
+                ->whereHas('test', fn ($q) => $q->where('curriculum_id', $curriculum->id))
+                ->avg('score');
+
+            return [
+                'curriculum_name' => $curriculum->name,
+                'total_tests' => $totalTests,
+                'taken_tests' => $takenTests,
+                'avg_score' => $avgScore !== null ? round((float) $avgScore, 1) : null,
+            ];
+        })->all();
+
+        // 直近の活動（日報＋受験を混ぜて時系列）
+        $recentReports = $user->dailyReports()
+            ->with('curriculum')
+            ->orderByDesc('reported_on')
+            ->limit(5)
+            ->get()
+            ->map(fn ($r) => [
+                'type' => 'report',
+                'date' => $r->reported_on->toDateString(),
+                'title' => $r->curriculum?->name ?? '—',
+                'detail' => "理解度: {$r->understanding_level}",
+            ]);
+
+        $recentSubmissions = $user->submissions()
+            ->with('test')
+            ->whereNotNull('submitted_at')
+            ->orderByDesc('submitted_at')
+            ->limit(5)
+            ->get()
+            ->map(fn ($s) => [
+                'type' => 'submission',
+                'date' => Carbon::parse($s->submitted_at)->toDateString(),
+                'title' => $s->test?->title ?? '—',
+                'detail' => "スコア: {$s->score}点",
+            ]);
+
+        $recentActivities = collect($recentReports->all())
+            ->merge($recentSubmissions->all())
+            ->sortByDesc('date')
+            ->take(10)
+            ->values()
+            ->all();
+
         return [
             'studentStats' => [
                 'has_missing_report' => $hasMissingReport,
                 'latest_report' => $latestReport,
                 'latest_submission' => $latestSubmission,
+                'report_rate' => $reportRate,
+                'test_avg_score' => $testAvgScore,
+                'test_count' => $testCount,
             ],
-            'understandingTrend' => $this->understandingTrend($user),
+            'understandingTrend' => $this->understandingTrend($user, self::STUDENT_TREND_DAYS),
+            'scoreTrend' => $scoreTrend,
+            'curriculumProgress' => $curriculumProgress,
+            'recentActivities' => $recentActivities,
         ];
     }
 
@@ -340,10 +433,10 @@ class DashboardController extends Controller
     /**
      * @return array<int, array{date: string, level: int|null}>
      */
-    private function understandingTrend(User $user): array
+    private function understandingTrend(User $user, int $days = self::UNDERSTANDING_TREND_DAYS): array
     {
         $end = Carbon::today();
-        $start = $end->copy()->subDays(self::UNDERSTANDING_TREND_DAYS - 1);
+        $start = $end->copy()->subDays($days - 1);
 
         $reports = DailyReport::where('user_id', $user->id)
             ->whereBetween('reported_on', [$start->toDateString(), $end->toDateString()])

@@ -230,7 +230,7 @@ class DashboardTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Dashboard/Index')
-            ->has('understandingTrend', 7)
+            ->has('understandingTrend', 30)
         );
     }
 
