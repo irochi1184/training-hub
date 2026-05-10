@@ -13,6 +13,7 @@ use App\Http\Controllers\RiskAlertController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\TestController;
+use App\Http\Controllers\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
 // 認証
@@ -114,6 +115,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
         Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
         Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+    });
+
+    // ユーザー管理（admin のみ）
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UserManagementController::class, 'create'])->name('users.create');
+        Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [UserManagementController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
     });
 
     // カリキュラム管理（admin のみ）
