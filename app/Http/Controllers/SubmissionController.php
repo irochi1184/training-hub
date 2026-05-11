@@ -121,10 +121,27 @@ class SubmissionController extends Controller
 
         $bestScore = $allAttempts->max('score');
 
+        // 前回スコア（現在の attempt - 1）
+        $previousAttempt = $allAttempts->firstWhere('attempt', $submission->attempt - 1);
+        $previousScore = $previousAttempt?->score;
+
+        // 再受験可否（学生本人のみ）
+        $canRetake = false;
+        $remainingAttempts = null;
+        if ($request->user()->id === $submission->user_id) {
+            $test = $submission->test;
+            $remaining = $test->remainingAttempts($submission->user_id);
+            $canRetake = $remaining === null || $remaining > 0;
+            $remainingAttempts = $remaining;
+        }
+
         return Inertia::render('Submissions/Show', [
             'submission' => $submission,
             'allAttempts' => $allAttempts,
             'bestScore' => $bestScore,
+            'previousScore' => $previousScore,
+            'canRetake' => $canRetake,
+            'remainingAttempts' => $remainingAttempts,
         ]);
     }
 }
