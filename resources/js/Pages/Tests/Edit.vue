@@ -100,6 +100,9 @@
 
         <QuestionEditor :questions="form.questions" />
 
+        <!-- CSVインポート -->
+        <CsvImportSection :test-id="test.id" @imported="onImported" />
+
         <!-- 送信ボタン -->
         <div class="flex justify-end gap-3">
           <Link
@@ -122,10 +125,11 @@
 </template>
 
 <script setup lang="ts">
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm, router } from '@inertiajs/vue3';
 import type { Test, Curriculum } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import QuestionEditor from '@/Components/QuestionEditor.vue';
+import CsvImportSection from '@/Components/CsvImportSection.vue';
 import type { QuestionForm } from '@/Components/QuestionEditor.vue';
 
 const props = defineProps<{
@@ -171,5 +175,9 @@ function toDatetimeLocal(isoStr: string): string {
 
 function submit(): void {
   form.put(`/tests/${props.test.id}`);
+}
+
+function onImported(): void {
+  router.reload({ only: ['test'] });
 }
 </script>
