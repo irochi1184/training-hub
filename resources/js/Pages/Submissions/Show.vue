@@ -37,8 +37,44 @@
                 :style="{ width: `${scorePercent}%` }"
               />
             </div>
-            <p class="text-sm text-slate-500 mt-2">正解率: {{ scorePercent }}%</p>
+            <div class="flex items-center gap-4 mt-2">
+              <p class="text-sm text-slate-500">正解率: {{ scorePercent }}%</p>
+              <!-- 前回比較 -->
+              <span v-if="previousScore !== null && previousScore !== undefined" class="text-xs font-medium" :class="scoreDiffClass">
+                前回比 {{ scoreDiff >= 0 ? '+' : '' }}{{ scoreDiff }}点
+              </span>
+            </div>
           </div>
+        </div>
+
+        <!-- 正答率バッジ -->
+        <div class="flex items-center gap-4 mt-5 pt-4 border-t border-slate-100">
+          <div class="flex items-center gap-1.5 text-sm">
+            <span class="w-3 h-3 rounded-full bg-emerald-400" />
+            <span class="text-slate-600">正解 {{ correctCount }}問</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-sm">
+            <span class="w-3 h-3 rounded-full bg-red-400" />
+            <span class="text-slate-600">不正解 {{ incorrectCount }}問</span>
+          </div>
+          <div v-if="unansweredCount > 0" class="flex items-center gap-1.5 text-sm">
+            <span class="w-3 h-3 rounded-full bg-slate-300" />
+            <span class="text-slate-600">未回答 {{ unansweredCount }}問</span>
+          </div>
+          <!-- 再受験ボタン -->
+          <Link
+            v-if="canRetake"
+            :href="`/tests/${submission.test_id}/take`"
+            class="ml-auto inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            もう一度受験する
+            <span v-if="remainingAttempts !== null" class="text-xs opacity-80">
+              （残り{{ remainingAttempts }}回）
+            </span>
+          </Link>
         </div>
       </div>
 
@@ -69,10 +105,26 @@
 
       <!-- 問題別正誤 -->
       <div class="space-y-4">
-        <h2 class="text-sm font-semibold text-slate-700">問題別の結果</h2>
+        <div class="flex items-center gap-3">
+          <h2 class="text-sm font-semibold text-slate-700">問題別の結果</h2>
+          <div class="flex gap-1 ml-auto">
+            <button
+              v-for="f in filterOptions"
+              :key="f.value"
+              type="button"
+              class="px-3 py-1 text-xs rounded-full transition-colors"
+              :class="filter === f.value
+                ? 'bg-indigo-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              @click="filter = f.value"
+            >
+              {{ f.label }}
+            </button>
+          </div>
+        </div>
 
         <div
-          v-for="(result, index) in answersWithQuestion"
+          v-for="result in filteredResults"
           :key="result.id"
           class="bg-white rounded-lg border overflow-hidden"
           :class="answerBorderClass(result.is_correct)"
@@ -93,7 +145,7 @@
               <svg v-else class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
               </svg>
-              <span class="font-medium">第 {{ index + 1 }} 問</span>
+              <span class="font-medium">第 {{ result.position }} 問</span>
               <span class="text-xs opacity-70">{{ result.question.score }}点</span>
               <span v-if="result.question.question_type === 'multiple'" class="text-xs text-indigo-500 font-medium">複数選択</span>
             </div>
@@ -133,7 +185,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import type { Submission, Answer, Choice, Question, AttemptSummary } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
@@ -143,32 +195,69 @@ const props = defineProps<{
   submission: Submission;
   allAttempts: AttemptSummary[];
   bestScore: number | null;
+  previousScore: number | null;
+  canRetake: boolean;
+  remainingAttempts: number | null;
 }>();
 
 interface QuestionResult {
   id: number;
+  position: number;
   question: Question;
   is_correct: boolean | null;
   selected_choice_ids: number[];
 }
+
+type FilterType = 'all' | 'incorrect' | 'correct';
+
+const filter = ref<FilterType>('all');
+const filterOptions: { value: FilterType; label: string }[] = [
+  { value: 'all', label: 'すべて' },
+  { value: 'incorrect', label: '不正解のみ' },
+  { value: 'correct', label: '正解のみ' },
+];
 
 // 問題ごとにグループ化した回答一覧
 const answersWithQuestion = computed<QuestionResult[]>(() => {
   const questions = props.submission.test?.questions ?? [];
   const answers = props.submission.answers ?? [];
 
-  return questions.map((question) => {
+  return questions.map((question, index) => {
     const questionAnswers = answers.filter((a) => a.question_id === question.id);
     const selectedIds = questionAnswers.map((a) => a.choice_id).filter((id): id is number => id !== null);
     const isCorrect = questionAnswers.length > 0 ? questionAnswers[0].is_correct : null;
 
     return {
       id: question.id,
+      position: index + 1,
       question,
       is_correct: isCorrect,
       selected_choice_ids: selectedIds,
     };
   });
+});
+
+// フィルター適用後の結果
+const filteredResults = computed(() => {
+  if (filter.value === 'all') return answersWithQuestion.value;
+  if (filter.value === 'incorrect') return answersWithQuestion.value.filter(r => r.is_correct === false);
+  return answersWithQuestion.value.filter(r => r.is_correct === true);
+});
+
+// 正解/不正解/未回答カウント
+const correctCount = computed(() => answersWithQuestion.value.filter(r => r.is_correct === true).length);
+const incorrectCount = computed(() => answersWithQuestion.value.filter(r => r.is_correct === false).length);
+const unansweredCount = computed(() => answersWithQuestion.value.filter(r => r.is_correct === null).length);
+
+// 前回との差分
+const scoreDiff = computed(() => {
+  if (props.previousScore === null || props.previousScore === undefined || props.submission.score === null) return 0;
+  return props.submission.score - props.previousScore;
+});
+const scoreDiffClass = computed(() => {
+  if (scoreDiff.value > 0) return 'text-emerald-600';
+  if (scoreDiff.value < 0) return 'text-red-600';
+  return 'text-slate-500';
 });
 
 // 満点（全問題の配点合計）
