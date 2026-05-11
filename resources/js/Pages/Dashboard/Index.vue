@@ -98,61 +98,84 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-5 mb-6">
-          <!-- 直近日報 -->
-          <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
-            <h2 class="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-4">直近の日報</h2>
-            <template v-if="studentStats.latest_report">
-              <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-slate-600">日付</span>
-                  <span class="text-sm font-medium">{{ formatDate(studentStats.latest_report.reported_on) }}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-slate-600">理解度</span>
-                  <UnderstandingBadge :level="studentStats.latest_report.understanding_level" />
-                </div>
-              </div>
-              <Link
-                :href="`/daily-reports/${studentStats.latest_report.id}`"
-                class="mt-4 block text-sm text-indigo-600 hover:text-indigo-800"
-              >
-                詳細を見る
-              </Link>
-            </template>
-            <p v-else class="text-sm text-slate-400">まだ日報がありません</p>
-          </div>
+        <!-- 学習サマリーカード -->
+        <div class="grid grid-cols-3 gap-5 mb-6">
+          <StatCard
+            label="日報提出率（30日）"
+            :value="studentStats.report_rate ?? 0"
+            unit="%"
+          />
+          <StatCard
+            label="テスト平均点"
+            :value="studentStats.test_avg_score ?? '—'"
+            unit="点"
+          />
+          <StatCard
+            label="受験済みテスト"
+            :value="studentStats.test_count ?? 0"
+            unit="回"
+          />
+        </div>
 
-          <!-- 直近テスト結果 -->
-          <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6">
-            <h2 class="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-4">直近のテスト結果</h2>
-            <template v-if="studentStats.latest_submission">
-              <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-slate-600">テスト</span>
-                  <span class="text-sm font-medium truncate max-w-[10rem]">
-                    {{ studentStats.latest_submission.test?.title }}
+        <!-- カリキュラム別進捗 -->
+        <div v-if="curriculumProgress.length > 0" class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6 mb-6">
+          <h2 class="text-sm font-semibold text-slate-700 mb-4">カリキュラム別進捗</h2>
+          <div class="space-y-4">
+            <div v-for="(cp, i) in curriculumProgress" :key="i">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-sm text-slate-700 font-medium">{{ cp.curriculum_name }}</span>
+                <span class="text-xs text-slate-500">
+                  {{ cp.taken_tests }}/{{ cp.total_tests }} テスト受験済み
+                  <span v-if="cp.avg_score !== null" class="ml-2 font-medium text-indigo-600">
+                    平均 {{ cp.avg_score }}点
                   </span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-slate-600">得点</span>
-                  <span class="text-sm font-bold text-indigo-700">
-                    {{ studentStats.latest_submission.score ?? '採点中' }}
-                  </span>
-                </div>
+                </span>
               </div>
-              <Link
-                :href="`/submissions/${studentStats.latest_submission.id}`"
-                class="mt-4 block text-sm text-indigo-600 hover:text-indigo-800"
-              >
-                詳細を見る
-              </Link>
-            </template>
-            <p v-else class="text-sm text-slate-400">まだ受験記録がありません</p>
+              <div class="w-full bg-slate-100 rounded-full h-2">
+                <div
+                  class="h-2 rounded-full transition-all"
+                  :class="progressBarClass(cp)"
+                  :style="{ width: progressPercent(cp) + '%' }"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        <UnderstandingTrendChart :trend="understandingTrend" />
+        <!-- グラフ行 -->
+        <div class="grid grid-cols-1 gap-5 mb-6 lg:grid-cols-2">
+          <UnderstandingTrendChart :trend="understandingTrend" />
+          <ScoreTrendChart :data="scoreTrend" />
+        </div>
+
+        <!-- 直近の活動 -->
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 p-6 mb-6">
+          <h2 class="text-sm font-semibold text-slate-700 mb-4">直近の活動</h2>
+          <div v-if="recentActivities.length === 0" class="text-sm text-slate-400">
+            まだ活動記録がありません
+          </div>
+          <div v-else class="space-y-2.5">
+            <div
+              v-for="(activity, i) in recentActivities"
+              :key="i"
+              class="flex items-center gap-3 text-sm"
+            >
+              <span
+                class="w-2 h-2 rounded-full shrink-0"
+                :class="activity.type === 'report' ? 'bg-blue-400' : 'bg-emerald-400'"
+              />
+              <span class="text-slate-400 w-24 shrink-0">{{ activity.date }}</span>
+              <span
+                class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0"
+                :class="activity.type === 'report' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'"
+              >
+                {{ activity.type === 'report' ? '日報' : 'テスト' }}
+              </span>
+              <span class="text-slate-700 truncate flex-1">{{ activity.title }}</span>
+              <span class="text-slate-500 shrink-0">{{ activity.detail }}</span>
+            </div>
+          </div>
+        </div>
       </template>
     </div>
   </AppLayout>
@@ -171,9 +194,9 @@ import type {
   UnderstandingDistribution,
   ReportRateItem,
   CurriculumScoreItem,
+  ScoreTrendItem,
 } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import UnderstandingBadge from '@/Components/UnderstandingBadge.vue';
 import StatCard from '@/Components/StatCard.vue';
 import RecentRiskAlertsCard from '@/Components/RecentRiskAlertsCard.vue';
 import CurriculumSummaryTable from '@/Components/CurriculumSummaryTable.vue';
@@ -181,7 +204,7 @@ import UnderstandingTrendChart from '@/Components/UnderstandingTrendChart.vue';
 import UnderstandingDistributionChart from '@/Components/UnderstandingDistributionChart.vue';
 import ReportRateTrendChart from '@/Components/ReportRateTrendChart.vue';
 import CurriculumScoreChart from '@/Components/CurriculumScoreChart.vue';
-import { formatDate } from '@/utils/formatDate';
+import ScoreTrendChart from '@/Components/ScoreTrendChart.vue';
 
 interface AdminStats {
   risk_alert_count: number;
@@ -199,6 +222,23 @@ interface StudentStats {
   has_missing_report: boolean;
   latest_report: DailyReport | null;
   latest_submission: Submission | null;
+  report_rate?: number;
+  test_avg_score?: number | null;
+  test_count?: number;
+}
+
+interface CurriculumProgressItem {
+  curriculum_name: string;
+  total_tests: number;
+  taken_tests: number;
+  avg_score: number | null;
+}
+
+interface ActivityItem {
+  type: 'report' | 'submission';
+  date: string;
+  title: string;
+  detail: string;
 }
 
 const props = defineProps<{
@@ -211,6 +251,9 @@ const props = defineProps<{
   understandingDistribution?: UnderstandingDistribution[];
   reportRateTrend?: ReportRateItem[];
   curriculumScoreComparison?: CurriculumScoreItem[];
+  scoreTrend?: ScoreTrendItem[];
+  curriculumProgress?: CurriculumProgressItem[];
+  recentActivities?: ActivityItem[];
 }>();
 
 const page = usePage<PageProps>();
@@ -240,4 +283,18 @@ const understandingTrend = computed<UnderstandingTrendItem[]>(() => props.unders
 const understandingDistribution = computed<UnderstandingDistribution[]>(() => props.understandingDistribution ?? []);
 const reportRateTrend = computed<ReportRateItem[]>(() => props.reportRateTrend ?? []);
 const curriculumScoreComparison = computed<CurriculumScoreItem[]>(() => props.curriculumScoreComparison ?? []);
+const scoreTrend = computed<ScoreTrendItem[]>(() => props.scoreTrend ?? []);
+const curriculumProgress = computed<CurriculumProgressItem[]>(() => props.curriculumProgress ?? []);
+const recentActivities = computed<ActivityItem[]>(() => props.recentActivities ?? []);
+
+function progressPercent(cp: CurriculumProgressItem): number {
+  return cp.total_tests > 0 ? Math.round((cp.taken_tests / cp.total_tests) * 100) : 0;
+}
+
+function progressBarClass(cp: CurriculumProgressItem): string {
+  const pct = progressPercent(cp);
+  if (pct >= 80) return 'bg-emerald-500';
+  if (pct >= 50) return 'bg-indigo-500';
+  return 'bg-amber-500';
+}
 </script>
