@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/tests/{test}/edit', [TestController::class, 'edit'])->name('tests.edit');
         Route::put('/tests/{test}', [TestController::class, 'update'])->name('tests.update');
         Route::delete('/tests/{test}', [TestController::class, 'destroy'])->name('tests.destroy');
+        Route::post('/tests/{test}/import', [TestController::class, 'import'])->name('tests.import');
     });
 
     // テスト受験

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\ImportTestQuestions;
 use App\Http\Requests\StoreTestRequest;
 use App\Http\Requests\UpdateTestRequest;
 use App\Models\Answer;
 use App\Models\Curriculum;
 use App\Models\Test;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -258,6 +260,31 @@ class TestController extends Controller
                 ]);
             }
         }
+    }
+
+    public function import(Request $request, Test $test, ImportTestQuestions $action): JsonResponse
+    {
+        $this->authorize('update', $test);
+
+        $request->validate([
+            'csv_file' => ['required', 'file', 'mimes:csv,txt', 'max:1024'],
+        ]);
+
+        $result = $action->execute($test, $request->file('csv_file'));
+
+        if (!empty($result['errors'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'CSVにエラーがあります。修正してから再度アップロードしてください。',
+                'errors' => $result['errors'],
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$result['imported']}問をインポートしました。",
+            'imported' => $result['imported'],
+        ]);
     }
 
     public function destroy(Test $test): RedirectResponse
