@@ -115,6 +115,7 @@ Route::middleware('auth')->group(function () {
 
     // お知らせ
     Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::post('/announcements/mark-all-read', [AnnouncementController::class, 'markAllRead'])->name('announcements.mark-all-read');
     Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 
     Route::middleware('role:admin,instructor')->group(function () {

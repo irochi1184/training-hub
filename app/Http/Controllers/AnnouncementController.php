@@ -24,6 +24,15 @@ class AnnouncementController extends Controller
 
         $query = $this->buildQueryForUser($user);
 
+        // 未読フィルター
+        $filterUnread = $request->query('filter') === 'unread';
+        if ($filterUnread) {
+            $readIds = AnnouncementRead::where('user_id', $user->id)->pluck('announcement_id');
+            if ($readIds->isNotEmpty()) {
+                $query->whereNotIn('id', $readIds);
+            }
+        }
+
         $announcements = $query
             ->with('creator:id,name')
             ->orderByDesc('published_at')
@@ -38,7 +47,35 @@ class AnnouncementController extends Controller
         return Inertia::render('Announcements/Index', [
             'announcements' => $announcements,
             'readIds' => $readIds,
+            'filter' => $request->query('filter', ''),
         ]);
+    }
+
+    public function markAllRead(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $query = $this->buildQueryForUser($user);
+        $announcementIds = $query->pluck('id');
+
+        $existingReadIds = AnnouncementRead::where('user_id', $user->id)
+            ->whereIn('announcement_id', $announcementIds)
+            ->pluck('announcement_id');
+
+        $unreadIds = $announcementIds->diff($existingReadIds);
+
+        $now = Carbon::now();
+        $inserts = $unreadIds->map(fn ($id) => [
+            'announcement_id' => $id,
+            'user_id' => $user->id,
+            'read_at' => $now,
+        ])->all();
+
+        if (!empty($inserts)) {
+            AnnouncementRead::insert($inserts);
+        }
+
+        return redirect()->route('announcements.index')->with('success', 'すべて既読にしました。');
     }
 
     public function show(Request $request, Announcement $announcement): Response

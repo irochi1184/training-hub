@@ -3,15 +3,46 @@
     <div class="max-w-4xl">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">お知らせ</h1>
+        <div class="flex items-center gap-3">
+          <button
+            v-if="hasUnread"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+            @click="markAllRead"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            すべて既読にする
+          </button>
+          <Link
+            v-if="canCreate"
+            href="/announcements-create"
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            お知らせを作成
+          </Link>
+        </div>
+      </div>
+
+      <!-- フィルタータブ -->
+      <div class="flex gap-1 mb-4">
         <Link
-          v-if="canCreate"
-          href="/announcements-create"
-          class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors"
+          href="/announcements"
+          class="px-3 py-1 text-xs rounded-full transition-colors"
+          :class="!filterValue ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
         >
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          お知らせを作成
+          すべて
+        </Link>
+        <Link
+          href="/announcements?filter=unread"
+          class="px-3 py-1 text-xs rounded-full transition-colors"
+          :class="filterValue === 'unread' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+        >
+          未読のみ
         </Link>
       </div>
 
@@ -72,7 +103,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import type { Announcement, PageProps, PaginatedData } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
@@ -80,11 +111,20 @@ import Pagination from '@/Components/Pagination.vue';
 const props = defineProps<{
   announcements: PaginatedData<Announcement>;
   readIds: number[];
+  filter?: string;
 }>();
 
 const page = usePage<PageProps>();
 const user = computed(() => page.props.auth.user);
 const canCreate = computed(() => user.value.role === 'admin' || user.value.role === 'instructor');
+const filterValue = computed(() => props.filter || '');
+const hasUnread = computed(() => {
+  return props.announcements.data.some(a => !props.readIds.includes(a.id));
+});
+
+function markAllRead(): void {
+  router.post('/announcements/mark-all-read');
+}
 
 function isRead(id: number): boolean {
   return props.readIds.includes(id);
