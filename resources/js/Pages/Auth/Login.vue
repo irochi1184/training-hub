@@ -70,7 +70,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthLayout from '@/Layouts/AuthLayout.vue';
 
-const form = useForm({
+const form = useForm<{ email: string; password: string; general?: string }>({
   email: '',
   password: '',
 });

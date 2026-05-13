@@ -168,26 +168,36 @@ class DashboardController extends Controller
                 'total_points' => $s->test?->questions?->sum('score') ?? 0,
             ]);
 
-        // カリキュラム別進捗
+        // カリキュラム別進捗（N+1回避: 一括クエリ）
         $enrolledCurriculumIds = Enrollment::where('user_id', $user->id)->pluck('curriculum_id');
-        $curricula = Curriculum::whereIn('id', $enrolledCurriculumIds)->get();
-        $curriculumProgress = $curricula->map(function (Curriculum $curriculum) use ($user) {
-            $totalTests = $curriculum->tests()->count();
-            $takenTests = Submission::where('user_id', $user->id)
-                ->whereNotNull('submitted_at')
-                ->whereHas('test', fn ($q) => $q->where('curriculum_id', $curriculum->id))
-                ->distinct('test_id')
-                ->count('test_id');
-            $avgScore = Submission::where('user_id', $user->id)
-                ->whereNotNull('score')
-                ->whereHas('test', fn ($q) => $q->where('curriculum_id', $curriculum->id))
-                ->avg('score');
+        $curricula = Curriculum::whereIn('id', $enrolledCurriculumIds)
+            ->withCount('tests')
+            ->get();
 
+        $curIds = $curricula->pluck('id')->all();
+        $takenTestsByCurriculum = Submission::where('user_id', $user->id)
+            ->whereNotNull('submitted_at')
+            ->join('tests', 'submissions.test_id', '=', 'tests.id')
+            ->whereIn('tests.curriculum_id', $curIds)
+            ->selectRaw('tests.curriculum_id, COUNT(DISTINCT submissions.test_id) as taken_count')
+            ->groupBy('tests.curriculum_id')
+            ->pluck('taken_count', 'curriculum_id');
+
+        $avgScoreByCurriculum = Submission::where('submissions.user_id', $user->id)
+            ->whereNotNull('submissions.score')
+            ->join('tests', 'submissions.test_id', '=', 'tests.id')
+            ->whereIn('tests.curriculum_id', $curIds)
+            ->selectRaw('tests.curriculum_id, AVG(submissions.score) as avg_score')
+            ->groupBy('tests.curriculum_id')
+            ->pluck('avg_score', 'curriculum_id');
+
+        $curriculumProgress = $curricula->map(function (Curriculum $curriculum) use ($takenTestsByCurriculum, $avgScoreByCurriculum) {
+            $avg = $avgScoreByCurriculum[$curriculum->id] ?? null;
             return [
                 'curriculum_name' => $curriculum->name,
-                'total_tests' => $totalTests,
-                'taken_tests' => $takenTests,
-                'avg_score' => $avgScore !== null ? round((float) $avgScore, 1) : null,
+                'total_tests' => $curriculum->tests_count,
+                'taken_tests' => (int) ($takenTestsByCurriculum[$curriculum->id] ?? 0),
+                'avg_score' => $avg !== null ? round((float) $avg, 1) : null,
             ];
         })->all();
 
