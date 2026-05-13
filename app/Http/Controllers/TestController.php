@@ -152,17 +152,27 @@ class TestController extends Controller
 
         $tests = $query->paginate(20);
 
-        // 学生向け: 各テストの受験回数・最高点・残り回数を付与
+        // 学生向け: 各テストの受験回数・最高点・残り回数を一括取得で付与
         if ($user->isStudent()) {
-            $tests->getCollection()->transform(function ($test) use ($user) {
-                $submissions = $test->submissions()
-                    ->where('user_id', $user->id)
-                    ->whereNotNull('submitted_at')
-                    ->get(['score', 'attempt']);
+            $testIds = $tests->getCollection()->pluck('id');
+            $submissionsByTest = \App\Models\Submission::where('user_id', $user->id)
+                ->whereIn('test_id', $testIds)
+                ->whereNotNull('submitted_at')
+                ->get(['test_id', 'score', 'attempt'])
+                ->groupBy('test_id');
 
-                $test->my_attempts = $submissions->count();
-                $test->my_best_score = $submissions->max('score');
-                $test->remaining_attempts = $test->remainingAttempts($user->id);
+            $tests->getCollection()->transform(function ($test) use ($user, $submissionsByTest) {
+                $subs = $submissionsByTest->get($test->id, collect());
+                $test->my_attempts = $subs->count();
+                $test->my_best_score = $subs->max('score');
+
+                if ($test->max_attempts === null) {
+                    $test->remaining_attempts = $subs->isNotEmpty() ? 0 : 1;
+                } elseif ($test->max_attempts === 0) {
+                    $test->remaining_attempts = null;
+                } else {
+                    $test->remaining_attempts = max(0, $test->max_attempts - $subs->count());
+                }
 
                 return $test;
             });

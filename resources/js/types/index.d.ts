@@ -263,4 +263,5 @@ export interface PageProps {
   };
   unread_announcement_count?: number;
   risk_alert_count?: number;
+  [key: string]: unknown;
 }
