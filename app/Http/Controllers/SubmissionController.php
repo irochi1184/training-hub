@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Actions\ScoreSubmissionAction;
+use App\Enums\NotificationEventType;
 use App\Http\Requests\StoreSubmissionRequest;
 use App\Models\Submission;
 use App\Models\Test;
+use App\Notifications\TestCompletedNotification;
+use App\Services\SlackNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -61,7 +64,7 @@ class SubmissionController extends Controller
         ]);
     }
 
-    public function store(StoreSubmissionRequest $request, ScoreSubmissionAction $scoreAction, Test $test): RedirectResponse
+    public function store(StoreSubmissionRequest $request, ScoreSubmissionAction $scoreAction, Test $test, SlackNotificationService $slack): RedirectResponse
     {
         $submission = Submission::where('test_id', $test->id)
             ->where('user_id', $request->user()->id)
@@ -97,6 +100,15 @@ class SubmissionController extends Controller
         }
 
         $scoreAction->execute($submission);
+
+        // テスト完了通知を非同期送信
+        $submission->load(['user', 'test']);
+        $org = $request->user()->organization;
+        $slack->send(
+            $org,
+            NotificationEventType::TestCompleted,
+            (new TestCompletedNotification($submission))->toSlackPayload(),
+        );
 
         return redirect()->route('submissions.show', $submission)
             ->with('success', '回答を提出しました');

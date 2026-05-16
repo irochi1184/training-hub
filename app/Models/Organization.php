@@ -10,7 +10,7 @@ class Organization extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'slack_webhook_url'];
 
     public function users(): HasMany
     {
@@ -20,5 +20,16 @@ class Organization extends Model
     public function curricula(): HasMany
     {
         return $this->hasMany(Curriculum::class);
+    }
+
+    public function notificationSettings(): HasMany
+    {
+        return $this->hasMany(NotificationSetting::class);
+    }
+
+    /** Slack Webhook URLが設定されているか */
+    public function isSlackEnabled(): bool
+    {
+        return filled($this->slack_webhook_url);
     }
 }

@@ -14,6 +14,13 @@ class OrganizationFactory extends Factory
     {
         return [
             'name' => fake()->company(),
+            'slack_webhook_url' => null,
         ];
+    }
+
+    /** Slack Webhook URL が設定済みの状態 */
+    public function withSlack(): static
+    {
+        return $this->state(['slack_webhook_url' => 'https://hooks.slack.com/services/TEST/WEBHOOK']);
     }
 }

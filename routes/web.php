@@ -14,6 +14,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\NotificationSettingController;
 use App\Http\Controllers\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
@@ -134,6 +135,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/{user}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
         Route::put('/users/{user}', [UserManagementController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+    });
+
+    // 通知設定（admin のみ）
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/settings/notifications', [NotificationSettingController::class, 'index'])->name('notification-settings.index');
+        Route::put('/settings/notifications', [NotificationSettingController::class, 'update'])->name('notification-settings.update');
+        Route::post('/settings/notifications/test', [NotificationSettingController::class, 'testWebhook'])->name('notification-settings.test');
     });
 
     // カリキュラム管理（admin のみ）
