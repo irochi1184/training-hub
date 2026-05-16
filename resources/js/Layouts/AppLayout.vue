@@ -120,6 +120,11 @@
                 CSV出力
               </NavLink>
             </li>
+            <li>
+              <NavLink href="/settings/notifications" :current="isCurrentPath('/settings/notifications')">
+                通知設定
+              </NavLink>
+            </li>
           </template>
 
           <!-- student 向け -->

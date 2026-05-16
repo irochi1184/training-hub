@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\NotificationEventType;
 use App\Http\Requests\StoreDailyReportRequest;
 use App\Models\Curriculum;
 use App\Models\DailyReport;
+use App\Notifications\DailyReportSubmittedNotification;
+use App\Services\SlackNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -69,7 +72,7 @@ class DailyReportController extends Controller
         ]);
     }
 
-    public function store(StoreDailyReportRequest $request): RedirectResponse
+    public function store(StoreDailyReportRequest $request, SlackNotificationService $slack): RedirectResponse
     {
         $this->authorize('create', DailyReport::class);
 
@@ -90,6 +93,15 @@ class DailyReportController extends Controller
             ...$validated,
             'user_id' => $request->user()->id,
         ]);
+
+        // 日報提出通知を非同期送信
+        $report->load('user');
+        $org = $request->user()->organization;
+        $slack->send(
+            $org,
+            NotificationEventType::DailyReportSubmitted,
+            (new DailyReportSubmittedNotification($report))->toSlackPayload(),
+        );
 
         return redirect()->route('daily-reports.show', $report)
             ->with('success', '日報を提出しました');

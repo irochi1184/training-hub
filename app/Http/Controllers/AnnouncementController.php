@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\AnnouncementTargetType;
+use App\Enums\NotificationEventType;
 use App\Http\Requests\StoreAnnouncementRequest;
 use App\Models\Announcement;
 use App\Models\AnnouncementRead;
 use App\Models\Curriculum;
 use App\Models\User;
+use App\Notifications\AnnouncementPostedNotification;
+use App\Services\SlackNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -109,14 +112,14 @@ class AnnouncementController extends Controller
         ]);
     }
 
-    public function store(StoreAnnouncementRequest $request): RedirectResponse
+    public function store(StoreAnnouncementRequest $request, SlackNotificationService $slack): RedirectResponse
     {
         $this->authorize('create', Announcement::class);
 
         $user = $request->user();
         $validated = $request->validated();
 
-        Announcement::create([
+        $announcement = Announcement::create([
             'organization_id' => $user->organization_id,
             'created_by' => $user->id,
             'title' => $validated['title'],
@@ -126,6 +129,17 @@ class AnnouncementController extends Controller
             'target_id' => $validated['target_type'] === 'all' ? null : $validated['target_id'],
             'published_at' => ($validated['publish_now'] ?? true) ? Carbon::now() : null,
         ]);
+
+        // お知らせ投稿通知を非同期送信（公開済みの場合のみ）
+        if ($announcement->isPublished()) {
+            $announcement->setRelation('creator', $user);
+            $org = $user->organization;
+            $slack->send(
+                $org,
+                NotificationEventType::AnnouncementPosted,
+                (new AnnouncementPostedNotification($announcement))->toSlackPayload(),
+            );
+        }
 
         return redirect()->route('announcements.index')
             ->with('success', 'お知らせを作成しました');

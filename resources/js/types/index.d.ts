@@ -238,6 +238,12 @@ export interface PaginatedData<T> {
   links: { url: string | null; label: string; active: boolean }[];
 }
 
+export interface NotificationSettingItem {
+  event_type: string;
+  enabled: boolean;
+  channel: string;
+}
+
 export interface Announcement {
   id: number;
   organization_id: number;
