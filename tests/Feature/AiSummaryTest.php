@@ -21,29 +21,21 @@ class AiSummaryTest extends TestCase
 {
     use RefreshDatabase;
 
-    // Claude API のモックレスポンス
-    private function fakeClaudeResponse(string $text): void
+    // Ollama API のモックレスポンス
+    private function fakeOllamaResponse(string $text): void
     {
         Http::fake([
-            'https://api.anthropic.com/v1/messages' => Http::response([
-                'content' => [
-                    ['type' => 'text', 'text' => $text],
-                ],
+            'http://localhost:11434/api/chat' => Http::response([
+                'message' => ['role' => 'assistant', 'content' => $text],
             ], 200),
         ]);
     }
 
-    private function fakeClaudeFailure(int $status = 500): void
+    private function fakeOllamaFailure(int $status = 500): void
     {
         Http::fake([
-            'https://api.anthropic.com/v1/messages' => Http::response(['error' => 'server error'], $status),
+            'http://localhost:11434/api/chat' => Http::response(['error' => 'server error'], $status),
         ]);
-    }
-
-    // APIキーをテスト用に設定するヘルパー
-    private function withApiKey(): void
-    {
-        config(['services.anthropic.api_key' => 'test-api-key']);
     }
 
     // =====================================================
@@ -52,8 +44,7 @@ class AiSummaryTest extends TestCase
 
     public function test_受講生の週次サマリーが生成されDBに保存される(): void
     {
-        $this->withApiKey();
-        $this->fakeClaudeResponse('良い点: 理解度が高い。改善点: 感想が少ない。');
+        $this->fakeOllamaResponse('良い点: 理解度が高い。改善点: 感想が少ない。');
 
         $org = Organization::factory()->create();
         $student = User::factory()->student()->create(['organization_id' => $org->id]);
@@ -86,7 +77,6 @@ class AiSummaryTest extends TestCase
 
     public function test_対象週に日報がない場合はnullを返す(): void
     {
-        $this->withApiKey();
 
         $org = Organization::factory()->create();
         $student = User::factory()->student()->create(['organization_id' => $org->id]);
@@ -101,8 +91,7 @@ class AiSummaryTest extends TestCase
 
     public function test_同じ週のサマリーは上書き更新される(): void
     {
-        $this->withApiKey();
-        $this->fakeClaudeResponse('更新後のサマリー');
+        $this->fakeOllamaResponse('更新後のサマリー');
 
         $org = Organization::factory()->create();
         $student = User::factory()->student()->create(['organization_id' => $org->id]);
@@ -142,8 +131,7 @@ class AiSummaryTest extends TestCase
 
     public function test_クラス週次サマリーが生成されDBに保存される(): void
     {
-        $this->withApiKey();
-        $this->fakeClaudeResponse('全体的に理解度が高い週でした。');
+        $this->fakeOllamaResponse('全体的に理解度が高い週でした。');
 
         $org = Organization::factory()->create();
         $curriculum = Curriculum::factory()->create(['organization_id' => $org->id]);
@@ -186,7 +174,6 @@ class AiSummaryTest extends TestCase
 
     public function test_クラスに日報がなければnullを返す(): void
     {
-        $this->withApiKey();
 
         $org = Organization::factory()->create();
         $curriculum = Curriculum::factory()->create(['organization_id' => $org->id]);
@@ -204,8 +191,7 @@ class AiSummaryTest extends TestCase
 
     public function test_要注意者の状況説明が生成されDBに保存される(): void
     {
-        $this->withApiKey();
-        $this->fakeClaudeResponse('理解度が低下傾向。推奨アクション: 個別面談を実施してください。');
+        $this->fakeOllamaResponse('理解度が低下傾向。推奨アクション: 個別面談を実施してください。');
 
         $org = Organization::factory()->create();
         $student = User::factory()->student()->create(['organization_id' => $org->id]);
@@ -243,41 +229,12 @@ class AiSummaryTest extends TestCase
     }
 
     // =====================================================
-    // APIキー未設定時
-    // =====================================================
-
-    public function test_APIキー未設定の場合はnullを返しAPIを呼ばない(): void
-    {
-        // APIキーを空にする
-        config(['services.anthropic.api_key' => '']);
-
-        $org = Organization::factory()->create();
-        $student = User::factory()->student()->create(['organization_id' => $org->id]);
-
-        DailyReport::factory()->create([
-            'user_id' => $student->id,
-            'reported_on' => Carbon::parse('2024-01-02')->toDateString(),
-            'understanding_level' => 3,
-        ]);
-
-        Http::fake();
-
-        $service = $this->app->make(AiSummaryService::class);
-        $result = $service->generateWeeklyStudentSummary($student, Carbon::parse('2024-01-01'));
-
-        $this->assertNull($result);
-        Http::assertNothingSent();
-        $this->assertDatabaseCount('ai_summaries', 0);
-    }
-
-    // =====================================================
     // API呼び出し失敗
     // =====================================================
 
-    public function test_Claude_APIがエラーを返した場合はnullを返す(): void
+    public function test_Ollama_APIがエラーを返した場合はnullを返す(): void
     {
-        $this->withApiKey();
-        $this->fakeClaudeFailure(500);
+        $this->fakeOllamaFailure(500);
 
         $org = Organization::factory()->create();
         $student = User::factory()->student()->create(['organization_id' => $org->id]);
@@ -301,8 +258,7 @@ class AiSummaryTest extends TestCase
 
     public function test_コマンド実行で全受講生と全カリキュラムのサマリーを生成する(): void
     {
-        $this->withApiKey();
-        $this->fakeClaudeResponse('週次サマリーの内容です。');
+        $this->fakeOllamaResponse('週次サマリーの内容です。');
 
         $org = Organization::factory()->create();
         $curriculum = Curriculum::factory()->create(['organization_id' => $org->id]);
@@ -337,8 +293,6 @@ class AiSummaryTest extends TestCase
 
     public function test_対象データがなくてもコマンドは正常終了する(): void
     {
-        $this->withApiKey();
-
         $this->artisan('summaries:generate-weekly --week=2024-01-01')
             ->expectsOutputToContain('0 件')
             ->assertExitCode(0);
@@ -379,8 +333,7 @@ class AiSummaryTest extends TestCase
 
     public function test_管理者は手動でサマリーを生成できる(): void
     {
-        $this->withApiKey();
-        $this->fakeClaudeResponse('手動生成サマリーです。');
+        $this->fakeOllamaResponse('手動生成サマリーです。');
 
         $org = Organization::factory()->create();
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);

@@ -28,8 +28,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'anthropic' => [
-        'api_key' => env('ANTHROPIC_API_KEY'),
+    'ollama' => [
+        'host' => env('OLLAMA_HOST', 'http://localhost:11434'),
+        'model' => env('OLLAMA_MODEL', 'gemma2'),
     ],
 
     'slack' => [

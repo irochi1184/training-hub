@@ -13,13 +13,14 @@ use Illuminate\Support\Facades\Log;
 
 class AiSummaryService
 {
-    private string $apiKey;
+    private string $ollamaHost;
 
-    private string $model = 'claude-sonnet-4-20250514';
+    private string $model;
 
     public function __construct()
     {
-        $this->apiKey = config('services.anthropic.api_key', '');
+        $this->ollamaHost = config('services.ollama.host', 'http://localhost:11434');
+        $this->model = config('services.ollama.model', 'gemma2');
     }
 
     /**
@@ -49,7 +50,7 @@ class AiSummaryService
         $systemPrompt = 'あなたは研修プログラムの学習支援アシスタントです。受講生の日報を分析し、簡潔で的確な要約を生成します。';
         $userMessage = "以下は受講生の1週間の日報です。学習状況を200字以内で要約し、良い点と改善点を挙げてください。\n\n{$reportText}";
 
-        $content = $this->callClaude($systemPrompt, $userMessage);
+        $content = $this->callOllama($systemPrompt, $userMessage);
         if ($content === null) {
             return null;
         }
@@ -102,7 +103,7 @@ class AiSummaryService
         $systemPrompt = 'あなたは研修プログラムの学習支援アシスタントです。クラス全体の学習データを分析し、講師に向けた簡潔なレポートを生成します。';
         $userMessage = "以下はクラス全体の1週間の学習データです。300字以内で全体の傾向と注意点をまとめてください。\n\n{$stats}\n\n各受講生の状況:\n{$reportSummary}";
 
-        $content = $this->callClaude($systemPrompt, $userMessage);
+        $content = $this->callOllama($systemPrompt, $userMessage);
         if ($content === null) {
             return null;
         }
@@ -166,7 +167,7 @@ class AiSummaryService
             . "直近2週間の日報:\n{$reportText}\n\n"
             . "直近2週間のテスト結果:\n{$testText}";
 
-        $content = $this->callClaude($systemPrompt, $userMessage);
+        $content = $this->callOllama($systemPrompt, $userMessage);
         if ($content === null) {
             return null;
         }
@@ -187,36 +188,37 @@ class AiSummaryService
     }
 
     /**
-     * Claude API を呼び出して応答テキストを返す
+     * Ollama API を呼び出して応答テキストを返す
      */
-    private function callClaude(string $systemPrompt, string $userMessage): ?string
+    private function callOllama(string $systemPrompt, string $userMessage): ?string
     {
-        if (empty($this->apiKey)) {
-            Log::warning('Anthropic API キーが設定されていません。AI要約をスキップします。');
+        $url = rtrim($this->ollamaHost, '/') . '/api/chat';
+
+        try {
+            $response = Http::timeout(120)->post($url, [
+                'model' => $this->model,
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemPrompt],
+                    ['role' => 'user', 'content' => $userMessage],
+                ],
+                'stream' => false,
+            ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::warning('Ollama に接続できません。AI要約をスキップします。', [
+                'host' => $this->ollamaHost,
+                'error' => $e->getMessage(),
+            ]);
             return null;
         }
 
-        $response = Http::withHeaders([
-            'x-api-key' => $this->apiKey,
-            'anthropic-version' => '2023-06-01',
-            'content-type' => 'application/json',
-        ])->timeout(30)->post('https://api.anthropic.com/v1/messages', [
-            'model' => $this->model,
-            'max_tokens' => 1024,
-            'system' => $systemPrompt,
-            'messages' => [
-                ['role' => 'user', 'content' => $userMessage],
-            ],
-        ]);
-
         if ($response->failed()) {
-            Log::warning('Claude API 呼び出しに失敗しました', [
+            Log::warning('Ollama API 呼び出しに失敗しました', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
             return null;
         }
 
-        return $response->json('content.0.text');
+        return $response->json('message.content');
     }
 }
