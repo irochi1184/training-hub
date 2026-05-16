@@ -258,6 +258,22 @@ export interface Announcement {
   creator?: { id: number; name: string };
 }
 
+export interface AiSummary {
+  id: number;
+  organization_id: number;
+  summarizable_type: string;
+  summarizable_id: number;
+  summary_type: 'weekly_student' | 'weekly_class' | 'risk_explanation';
+  content: string;
+  week_start: string;
+  week_end: string;
+  created_at: string;
+  summarizable?: {
+    id: number;
+    name: string;
+  };
+}
+
 // Inertia shared data
 export interface PageProps {
   auth: {

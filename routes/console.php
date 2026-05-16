@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('risk:detect')->dailyAt('06:00');
+Schedule::command('summaries:generate-weekly')->weeklyOn(1, '06:00');

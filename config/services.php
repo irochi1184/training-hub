@@ -28,6 +28,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'ollama' => [
+        'host' => env('OLLAMA_HOST', 'http://localhost:11434'),
+        'model' => env('OLLAMA_MODEL', 'gemma2'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

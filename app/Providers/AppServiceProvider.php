@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\AiSummary;
 use App\Models\Curriculum;
 use App\Models\DailyReport;
 use App\Models\DailyReportComment;
@@ -9,6 +10,7 @@ use App\Models\RiskAlert;
 use App\Models\Submission;
 use App\Models\Test;
 use App\Models\User;
+use App\Policies\AiSummaryPolicy;
 use App\Policies\CurriculumPolicy;
 use App\Policies\DailyReportCommentPolicy;
 use App\Policies\DailyReportPolicy;
@@ -26,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Gate::policy(AiSummary::class, AiSummaryPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Curriculum::class, CurriculumPolicy::class);
         Gate::policy(DailyReport::class, DailyReportPolicy::class);
