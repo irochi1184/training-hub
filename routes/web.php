@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiSummaryController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EnrollmentController;
@@ -124,6 +125,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
         Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
         Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+    });
+
+    // AI要約
+    Route::middleware('role:admin,instructor')->group(function () {
+        Route::get('/ai-summaries', [AiSummaryController::class, 'index'])->name('ai-summaries.index');
+        Route::get('/ai-summaries/{aiSummary}', [AiSummaryController::class, 'show'])->name('ai-summaries.show');
+        Route::post('/ai-summaries/generate', [AiSummaryController::class, 'generate'])->name('ai-summaries.generate');
     });
 
     // ユーザー管理（admin のみ）
