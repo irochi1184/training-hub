@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\AiSummary;
 use App\Models\Curriculum;
 use App\Models\DailyReport;
 use App\Models\Enrollment;
@@ -21,6 +22,7 @@ class DashboardController extends Controller
     private const RECENT_RISK_ALERT_LIMIT = 5;
     private const UNDERSTANDING_TREND_DAYS = 7;
     private const STUDENT_TREND_DAYS = 30;
+    private const RECENT_AI_SUMMARY_LIMIT = 3;
 
     public function index(Request $request): Response
     {
@@ -74,6 +76,7 @@ class DashboardController extends Controller
             'understandingDistribution' => $this->understandingDistribution($curricula),
             'reportRateTrend' => $this->reportRateTrend($totalStudents),
             'curriculumScoreComparison' => $this->curriculumScoreComparison($curricula),
+            'recentAiSummaries' => $this->recentAiSummaries(),
         ];
     }
 
@@ -118,6 +121,7 @@ class DashboardController extends Controller
             'understandingDistribution' => $this->understandingDistribution($curricula),
             'reportRateTrend' => $this->reportRateTrend($totalStudentsInCurricula, $curriculumIds->all()),
             'curriculumScoreComparison' => $this->curriculumScoreComparison($curricula),
+            'recentAiSummaries' => $this->recentAiSummaries(),
         ];
     }
 
@@ -463,5 +467,33 @@ class DashboardController extends Controller
         }
 
         return $trend;
+    }
+
+    /**
+     * ダッシュボード表示用の直近AI要約を取得する。
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function recentAiSummaries(): array
+    {
+        return AiSummary::with('summarizable')
+            ->orderByDesc('created_at')
+            ->limit(self::RECENT_AI_SUMMARY_LIMIT)
+            ->get()
+            ->map(fn (AiSummary $s) => [
+                'id' => $s->id,
+                'organization_id' => $s->organization_id,
+                'summarizable_type' => $s->summarizable_type,
+                'summarizable_id' => $s->summarizable_id,
+                'summary_type' => $s->summary_type->value,
+                'content' => $s->content,
+                'week_start' => $s->week_start?->toDateString(),
+                'week_end' => $s->week_end?->toDateString(),
+                'created_at' => $s->created_at?->toIso8601String(),
+                'summarizable' => $s->summarizable
+                    ? ['id' => $s->summarizable->id, 'name' => $s->summarizable->name]
+                    : null,
+            ])
+            ->all();
     }
 }

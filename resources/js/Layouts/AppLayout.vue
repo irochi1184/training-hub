@@ -98,6 +98,11 @@
                 </span>
               </NavLink>
             </li>
+            <li>
+              <NavLink href="/ai-summaries" :current="isCurrentPath('/ai-summaries')">
+                AI要約
+              </NavLink>
+            </li>
           </template>
 
           <!-- admin 向け -->

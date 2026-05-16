@@ -40,6 +40,9 @@
         <div class="mb-6">
           <CurriculumScoreChart :data="curriculumScoreComparison" />
         </div>
+
+        <!-- 最新のAI要約 -->
+        <RecentAiSummariesCard :summaries="recentAiSummaries" />
       </template>
 
       <!-- instructor向け表示 -->
@@ -79,6 +82,9 @@
         <div class="mb-6">
           <CurriculumScoreChart :data="curriculumScoreComparison" />
         </div>
+
+        <!-- 最新のAI要約 -->
+        <RecentAiSummariesCard :summaries="recentAiSummaries" />
       </template>
 
       <!-- student向け表示 -->
@@ -195,6 +201,7 @@ import type {
   ReportRateItem,
   CurriculumScoreItem,
   ScoreTrendItem,
+  AiSummary,
 } from '@/types';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatCard from '@/Components/StatCard.vue';
@@ -205,6 +212,7 @@ import UnderstandingDistributionChart from '@/Components/UnderstandingDistributi
 import ReportRateTrendChart from '@/Components/ReportRateTrendChart.vue';
 import CurriculumScoreChart from '@/Components/CurriculumScoreChart.vue';
 import ScoreTrendChart from '@/Components/ScoreTrendChart.vue';
+import RecentAiSummariesCard from '@/Components/RecentAiSummariesCard.vue';
 
 interface AdminStats {
   risk_alert_count: number;
@@ -254,6 +262,7 @@ const props = defineProps<{
   scoreTrend?: ScoreTrendItem[];
   curriculumProgress?: CurriculumProgressItem[];
   recentActivities?: ActivityItem[];
+  recentAiSummaries?: AiSummary[];
 }>();
 
 const page = usePage<PageProps>();
@@ -286,6 +295,7 @@ const curriculumScoreComparison = computed<CurriculumScoreItem[]>(() => props.cu
 const scoreTrend = computed<ScoreTrendItem[]>(() => props.scoreTrend ?? []);
 const curriculumProgress = computed<CurriculumProgressItem[]>(() => props.curriculumProgress ?? []);
 const recentActivities = computed<ActivityItem[]>(() => props.recentActivities ?? []);
+const recentAiSummaries = computed<AiSummary[]>(() => props.recentAiSummaries ?? []);
 
 function progressPercent(cp: CurriculumProgressItem): number {
   return cp.total_tests > 0 ? Math.round((cp.taken_tests / cp.total_tests) * 100) : 0;
