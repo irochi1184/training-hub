@@ -2,14 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Enums\NotificationEventType;
 use App\Enums\RiskAlertReason;
+use App\Enums\SummaryType;
 use App\Enums\UserRole;
+use App\Models\AiSummary;
 use App\Models\Announcement;
 use App\Models\Answer;
 use App\Models\Choice;
 use App\Models\Curriculum;
 use App\Models\DailyReport;
 use App\Models\Enrollment;
+use App\Models\NotificationSetting;
 use App\Models\Organization;
 use App\Models\Question;
 use App\Models\RiskAlert;
@@ -354,6 +358,50 @@ class DatabaseSeeder extends Seeder
             'target_type' => 'curriculum',
             'target_id' => $curriculum1->id,
             'published_at' => Carbon::now()->subHours(12),
+        ]);
+
+        // Slack通知設定（全イベント有効）
+        foreach (NotificationEventType::cases() as $eventType) {
+            NotificationSetting::create([
+                'organization_id' => $org->id,
+                'event_type' => $eventType->value,
+                'enabled' => true,
+                'channel' => null,
+            ]);
+        }
+
+        // AI要約サンプル
+        $weekStart = Carbon::today()->startOfWeek(Carbon::MONDAY)->subWeek();
+        $weekEnd = $weekStart->copy()->endOfWeek(Carbon::SUNDAY);
+
+        AiSummary::create([
+            'organization_id' => $org->id,
+            'summarizable_type' => User::class,
+            'summarizable_id' => $students->get(0)->id,
+            'summary_type' => SummaryType::WeeklyStudent->value,
+            'content' => "【良い点】毎日欠かさず日報を提出しており、学習習慣が定着しています。HTMLの基本構造について正確に理解できています。\n\n【改善点】理解度が3前後で推移しており、実践的な演習を増やすことで定着を図ると良いでしょう。感想欄の記入が少ないため、振り返りの習慣をつけることを推奨します。",
+            'week_start' => $weekStart->toDateString(),
+            'week_end' => $weekEnd->toDateString(),
+        ]);
+
+        AiSummary::create([
+            'organization_id' => $org->id,
+            'summarizable_type' => Curriculum::class,
+            'summarizable_id' => $curriculum1->id,
+            'summary_type' => SummaryType::WeeklyClass->value,
+            'content' => "【全体傾向】提出率100%（3/3人）、理解度平均3.0/5。全員がHTML基礎の学習を進めており、進捗に大きな遅れはありません。\n\n【注意点】受講生1号の理解度がやや低め（2.0）で推移しています。個別フォローの検討を推奨します。受講生2号は理解度が安定しており、発展的な課題を与えても良いでしょう。",
+            'week_start' => $weekStart->toDateString(),
+            'week_end' => $weekEnd->toDateString(),
+        ]);
+
+        AiSummary::create([
+            'organization_id' => $org->id,
+            'summarizable_type' => RiskAlert::class,
+            'summarizable_id' => 1,
+            'summary_type' => SummaryType::RiskExplanation->value,
+            'content' => "受講生1号は直近2週間で理解度が2.0前後に低下しています。日報の内容から、HTMLのタグ構造でつまずいている様子が見られます。\n\n【推奨アクション】個別面談を実施し、どの部分で困っているか具体的にヒアリングしてください。必要に応じて補習資料の提供を検討してください。",
+            'week_start' => null,
+            'week_end' => null,
         ]);
     }
 }
