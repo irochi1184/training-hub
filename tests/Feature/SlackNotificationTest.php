@@ -56,6 +56,8 @@ class SlackNotificationTest extends TestCase
             'user_id' => $this->student->id,
             'curriculum_id' => $this->curriculum->id,
         ]);
+
+        $this->curriculum->instructors()->attach($this->instructor->id, ['role' => 'main']);
     }
 
     /** 通知設定が有効なとき日報提出でジョブがディスパッチされる */
